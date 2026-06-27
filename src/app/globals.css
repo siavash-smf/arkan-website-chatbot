@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-pine: #143a32;
+    --color-brass: #b5853a;
+    --color-bone: #f7f3ec;
+    --color-sand: #e7decf;
+    --color-ink: #15201c;
+    --color-slate: #5a5f5b;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* جبران ارتفاع هدر چسبان هنگام پرش لنگری */
+    scroll-padding-top: 5.5rem;
+  }
+
+  body {
+    background-color: var(--color-bone);
+    color: var(--color-ink);
+    font-family: var(--font-vazirmatn), system-ui, sans-serif;
+    font-size: 1.0625rem; /* 17px */
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-estedad), system-ui, sans-serif;
+    color: var(--color-pine);
+    line-height: 1.3;
+  }
+
+  /* اعداد جدولی (tabular) برای آمار و ارقام */
+  .nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* فوکوس قابل‌رؤیت برای ناوبری با کیبورد */
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* احترام به prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* لینک «پرش به محتوا» برای دسترسی‌پذیری */
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    top: -4rem;
+    z-index: 100;
+    background-color: var(--color-pine);
+    color: var(--color-bone);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
+
+/* عنصر reveal — حالت اولیه پیش از ورود به دید */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
