@@ -207,6 +207,86 @@ export async function activatePromptAction(id: string): Promise<ActionResult> {
   return error ? { ok: false, message: error.message } : { ok: true, message: "این نسخه فعال شد." };
 }
 
+// ── تلگرام ───────────────────────────────────────────────────────
+const SITE_URL = "https://arkan-website-chatbot.vercel.app";
+
+export async function getTelegramStatusAction(): Promise<{
+  ok: boolean;
+  configured: boolean;
+  username?: string;
+  webhookUrl?: string;
+  pending?: number;
+  message?: string;
+}> {
+  if (!guard()) return { ok: false, configured: false, message: "دسترسی غیرمجاز." };
+  const { isTelegramConfigured, getMe, getWebhookInfo } = await import("@/lib/telegram");
+  if (!isTelegramConfigured()) return { ok: true, configured: false };
+  try {
+    const me = await getMe();
+    const info = await getWebhookInfo();
+    return {
+      ok: true,
+      configured: true,
+      username: me?.result?.username,
+      webhookUrl: info?.result?.url || "",
+      pending: info?.result?.pending_update_count ?? 0,
+    };
+  } catch (e) {
+    return { ok: false, configured: true, message: (e as Error).message };
+  }
+}
+
+export async function setTelegramWebhookAction(): Promise<ActionResult> {
+  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!secret) return { ok: false, message: "TELEGRAM_WEBHOOK_SECRET تنظیم نشده است." };
+  const { setWebhook } = await import("@/lib/telegram");
+  try {
+    const res = (await setWebhook(`${SITE_URL}/api/telegram/webhook`, secret)) as { ok: boolean; description?: string };
+    return res.ok
+      ? { ok: true, message: "Webhook با موفقیت تنظیم شد." }
+      : { ok: false, message: res.description ?? "تنظیم webhook ناموفق بود." };
+  } catch (e) {
+    return { ok: false, message: (e as Error).message };
+  }
+}
+
+export async function deleteTelegramWebhookAction(): Promise<ActionResult> {
+  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
+  const { deleteWebhook } = await import("@/lib/telegram");
+  try {
+    await deleteWebhook();
+    return { ok: true, message: "Webhook حذف شد." };
+  } catch (e) {
+    return { ok: false, message: (e as Error).message };
+  }
+}
+
+export async function broadcastTelegramAction(text: string): Promise<ActionResult> {
+  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
+  if (text.trim().length < 2) return { ok: false, message: "متن پیام خالی است." };
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return { ok: false, message: "اتصال Supabase برقرار نیست." };
+
+  const { data: users } = await supabase
+    .from("unified_users")
+    .select("external_id")
+    .eq("channel", "telegram");
+  if (!users || users.length === 0) return { ok: false, message: "هنوز کاربر تلگرامی ثبت نشده است." };
+
+  const { sendMessage } = await import("@/lib/telegram");
+  let sent = 0;
+  for (const u of users) {
+    try {
+      const r = (await sendMessage(u.external_id, text.trim())) as { ok: boolean };
+      if (r.ok) sent++;
+    } catch {
+      /* رد کن */
+    }
+  }
+  return { ok: true, message: `پیام به ${sent} از ${users.length} کاربر ارسال شد.` };
+}
+
 // ── پیکربندی ویجت ───────────────────────────────────────────────
 export async function saveWidgetConfigAction(values: {
   enabled: boolean;

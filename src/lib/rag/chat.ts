@@ -10,26 +10,36 @@ import { streamChat, isOpenRouterConfigured, type ChatMessage } from "./generate
 
 /**
  * مغز مرکزی چت‌بات — مستقل از کانال.
- * همه‌ی کانال‌ها (صفحه‌ی چت، ویجت، تلگرام) این تابع را صدا می‌زنند.
- * خروجی یک Response استریمی متنی است؛ متادیتا (conversationId + منابع) در هدر x-arkan-meta (base64).
+ * - handleChatTurn → پاسخ استریمی (وب/ویجت)
+ * - getReplyText   → پاسخ متنی کامل (تلگرام و کانال‌های غیراستریمی)
+ * هر دو از prepareTurn مشترک استفاده می‌کنند.
  */
 
 const HISTORY_LIMIT = 12;
+const NOT_CONFIGURED =
+  "سرویس گفتگو هنوز پیکربندی نشده است. لطفاً کمی بعد دوباره امتحان کنید یا فرم درخواست مشاوره را پر کنید.";
 
 export type ChatTurnInput = {
   conversationId?: string | null;
   channel?: string;
+  externalUserId?: string | null;
   userMessage: string;
 };
 
-export async function handleChatTurn(input: ChatTurnInput): Promise<Response> {
+type Source = { title: string; similarity: number; chunk_index: number };
+type PreparedTurn = {
+  result: ReturnType<typeof streamChat> | null;
+  conversationId: string | null;
+  sources: Source[];
+  fallbackText?: string;
+};
+
+async function prepareTurn(input: ChatTurnInput): Promise<PreparedTurn> {
   const supabase = getSupabaseAdmin();
   const channel = input.channel ?? "web";
 
   if (!isOpenRouterConfigured()) {
-    return fallbackResponse(
-      "سرویس گفتگو هنوز پیکربندی نشده است. لطفاً کمی بعد دوباره امتحان کنید یا فرم درخواست مشاوره را پر کنید."
-    );
+    return { result: null, conversationId: input.conversationId ?? null, sources: [], fallbackText: NOT_CONFIGURED };
   }
 
   // ۱) conversation
@@ -38,26 +48,19 @@ export async function handleChatTurn(input: ChatTurnInput): Promise<Response> {
     if (!conversationId) {
       const { data } = await supabase
         .from("conversations")
-        .insert({ channel, status: "open" })
+        .insert({ channel, status: "open", external_user_id: input.externalUserId ?? null })
         .select("id")
         .single();
       conversationId = data?.id ?? null;
     } else {
-      await supabase
-        .from("conversations")
-        .update({ last_at: new Date().toISOString() })
-        .eq("id", conversationId);
+      await supabase.from("conversations").update({ last_at: new Date().toISOString() }).eq("id", conversationId);
     }
     if (conversationId) {
-      await supabase.from("messages").insert({
-        conversation_id: conversationId,
-        role: "user",
-        content: input.userMessage,
-      });
+      await supabase.from("messages").insert({ conversation_id: conversationId, role: "user", content: input.userMessage });
     }
   }
 
-  // ۲) تاریخچه (جدیدترین‌ها)
+  // ۲) تاریخچه
   let history: ChatMessage[] = [];
   if (supabase && conversationId) {
     const { data } = await supabase
@@ -76,7 +79,7 @@ export async function handleChatTurn(input: ChatTurnInput): Promise<Response> {
     history.push({ role: "user", content: input.userMessage });
   }
 
-  // ۳) بازیابی (RAG)
+  // ۳) بازیابی RAG
   const chunks = await retrieve(input.userMessage);
   const context = buildContext(chunks);
   const retrievedChunkIds = chunks.map((c) => c.id);
@@ -87,13 +90,11 @@ export async function handleChatTurn(input: ChatTurnInput): Promise<Response> {
     ? `${basePrompt}\n\n# منابع بازیابی‌شده\nبرای پاسخ فقط از منابع زیر استفاده کن. اگر پاسخ در این منابع نبود، صادقانه بگو و کاربر را به ثبت درخواست مشاوره دعوت کن.\n\n${context}`
     : `${basePrompt}\n\n(در پایگاه دانش منبع مرتبطی یافت نشد. اگر مطمئن نیستی، صادقانه بگو و کاربر را به «ثبت درخواست مشاوره» دعوت کن.)`;
 
-  // ۵) پیکربندی مدل
+  // ۵) مدل + ابزار
   const modelCfg = await getModelConfig(channel);
-
-  // ۶) ابزارها
   const tools = buildTools(supabase, conversationId);
 
-  // ۷) تولید استریمی
+  // ۶) تولید استریمی (با persist در onFinish)
   const result = streamChat({
     model: modelCfg.active_model,
     system,
@@ -117,22 +118,35 @@ export async function handleChatTurn(input: ChatTurnInput): Promise<Response> {
     },
   });
 
-  // ۸) متادیتا در هدر (base64 برای پشتیبانی از فارسی)
-  const meta = {
-    conversationId,
-    sources: chunks.map((c) => ({
-      title: c.title,
-      similarity: Math.round(c.similarity * 100) / 100,
-      chunk_index: c.chunk_index,
-    })),
-  };
+  const sources: Source[] = chunks.map((c) => ({
+    title: c.title,
+    similarity: Math.round(c.similarity * 100) / 100,
+    chunk_index: c.chunk_index,
+  }));
 
-  return result.toTextStreamResponse({
-    headers: { "x-arkan-meta": toBase64(meta) },
+  return { result, conversationId, sources };
+}
+
+/** پاسخ استریمی (وب/ویجت). متادیتا در هدر x-arkan-meta (base64). */
+export async function handleChatTurn(input: ChatTurnInput): Promise<Response> {
+  const p = await prepareTurn(input);
+  if (!p.result) return fallbackResponse(p.fallbackText ?? NOT_CONFIGURED);
+  return p.result.toTextStreamResponse({
+    headers: { "x-arkan-meta": toBase64({ conversationId: p.conversationId, sources: p.sources }) },
   });
 }
 
-// ── ابزار ثبت لید (یکپارچه با جدول leads سایت) ──────────────────
+/** پاسخ متنی کامل (تلگرام و کانال‌های غیراستریمی). */
+export async function getReplyText(
+  input: ChatTurnInput
+): Promise<{ text: string; conversationId: string | null; sources: Source[] }> {
+  const p = await prepareTurn(input);
+  if (!p.result) return { text: p.fallbackText ?? NOT_CONFIGURED, conversationId: p.conversationId, sources: [] };
+  const text = await p.result.text;
+  return { text: text || "—", conversationId: p.conversationId, sources: p.sources };
+}
+
+// ── ابزار ثبت لید ───────────────────────────────────────────────
 function buildTools(supabase: SupabaseClient | null, conversationId: string | null): ToolSet {
   return {
     capture_lead: tool({
@@ -142,23 +156,16 @@ function buildTools(supabase: SupabaseClient | null, conversationId: string | nu
         full_name: z.string().describe("نام و نام خانوادگی کاربر"),
         phone: z.string().describe("شماره تماس کاربر"),
         business_name: z.string().describe("نام کسب‌وکار"),
-        stage: z
-          .enum(["ایده", "نوپا", "در حال رشد", "تثبیت‌شده"])
-          .describe("مرحله‌ی کسب‌وکار"),
+        stage: z.enum(["ایده", "نوپا", "در حال رشد", "تثبیت‌شده"]).describe("مرحله‌ی کسب‌وکار"),
         challenge: z.string().describe("بزرگ‌ترین چالش فعلی کاربر"),
         email: z.string().optional().describe("ایمیل (اختیاری)"),
         industry: z.string().optional().describe("حوزه‌ی فعالیت (اختیاری)"),
-        preferred_time: z
-          .enum(["صبح", "بعدازظهر", "عصر"])
-          .optional()
-          .describe("زمان مناسب تماس (اختیاری)"),
+        preferred_time: z.enum(["صبح", "بعدازظهر", "عصر"]).optional().describe("زمان مناسب تماس (اختیاری)"),
       }),
       execute: async (args) => {
         if (!supabase) return { ok: false, message: "ثبت موقتاً ممکن نیست." };
         const parsed = leadSchema.safeParse(args);
-        if (!parsed.success) {
-          return { ok: false, message: "اطلاعات کامل یا معتبر نیست؛ از کاربر تکمیلش را بخواه." };
-        }
+        if (!parsed.success) return { ok: false, message: "اطلاعات کامل یا معتبر نیست؛ از کاربر تکمیلش را بخواه." };
         const d = parsed.data;
         const { error } = await supabase.from("leads").insert({
           full_name: d.full_name,
@@ -177,10 +184,7 @@ function buildTools(supabase: SupabaseClient | null, conversationId: string | nu
           console.error("[capture_lead] خطا:", error.message);
           return { ok: false, message: "در ثبت خطایی رخ داد." };
         }
-        return {
-          ok: true,
-          message: "درخواست مشاوره با موفقیت ثبت شد. تیم آرکان ظرف ۲۴ ساعت کاری تماس می‌گیرد.",
-        };
+        return { ok: true, message: "درخواست مشاوره با موفقیت ثبت شد. تیم آرکان ظرف ۲۴ ساعت کاری تماس می‌گیرد." };
       },
     }),
   };
