@@ -3,10 +3,13 @@ import { logout } from "@/app/admin/actions";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { key: "leads", label: "لیدها", href: "/admin" },
+  { key: "dashboard", label: "داشبورد", href: "/admin" },
+  { key: "leads", label: "لیدها", href: "/admin/leads" },
   { key: "knowledge", label: "پایگاه دانش", href: "/admin/knowledge" },
   { key: "models", label: "مدل‌ها", href: "/admin/models" },
   { key: "conversations", label: "گفتگوها", href: "/admin/conversations" },
+  { key: "feedback", label: "بازخورد", href: "/admin/feedback" },
+  { key: "playground", label: "پلی‌گراند", href: "/admin/playground" },
   { key: "persona", label: "پرسونا", href: "/admin/persona" },
   { key: "widget", label: "ویجت", href: "/admin/widget" },
   { key: "telegram", label: "تلگرام", href: "/admin/telegram" },

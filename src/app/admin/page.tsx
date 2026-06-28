@@ -1,38 +1,32 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { isAuthed } from "@/lib/auth";
-import { getSupabaseAdmin } from "@/lib/supabase";
 import AdminShell from "@/components/admin/AdminShell";
-import LeadsManager, { type Lead } from "@/components/admin/LeadsManager";
+import Dashboard from "@/components/admin/Dashboard";
+import { getAnalytics } from "@/lib/rag/analytics";
 
 export const metadata: Metadata = {
-  title: "پنل مدیریت",
+  title: "داشبورد",
   robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminDashboardPage() {
   if (!isAuthed()) redirect("/admin/login");
 
-  const supabase = getSupabaseAdmin();
-  let leads: Lead[] = [];
+  let data = null;
   let error: string | null = null;
-
-  if (!supabase) {
-    error = "اتصال Supabase تنظیم نشده است. متغیرهای محیطی را بررسی کنید.";
-  } else {
-    const { data, error: dbError } = await supabase
-      .from("leads")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (dbError) error = dbError.message;
-    else leads = (data as Lead[]) ?? [];
+  try {
+    data = await getAnalytics();
+    if (!data) error = "اتصال Supabase تنظیم نشده است.";
+  } catch (e) {
+    error = (e as Error).message;
   }
 
   return (
-    <AdminShell active="leads">
-      <LeadsManager leads={leads} error={error} />
+    <AdminShell active="dashboard">
+      <Dashboard data={data} error={error} />
     </AdminShell>
   );
 }

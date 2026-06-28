@@ -14,7 +14,9 @@ function parseTags(raw: string | null | undefined): string[] | undefined {
   const tags = raw.split(/[,،]/).map((t) => t.trim()).filter(Boolean);
   return tags.length ? tags : undefined;
 }
-import { retrieve, type RetrievedChunk } from "@/lib/rag/retrieve";
+import { retrieve, buildContext, type RetrievedChunk } from "@/lib/rag/retrieve";
+import { getActivePrompt, getModelConfig } from "@/lib/rag/config";
+import { streamChat } from "@/lib/rag/generate";
 
 type ActionResult = { ok: boolean; message?: string };
 
@@ -205,6 +207,51 @@ export async function activatePromptAction(id: string): Promise<ActionResult> {
   const { error } = await supabase.from("prompt_versions").update({ is_active: true }).eq("id", id);
   revalidatePath("/admin/persona");
   return error ? { ok: false, message: error.message } : { ok: true, message: "این نسخه فعال شد." };
+}
+
+// ── پلی‌گراند (تست بدون ذخیره) ──────────────────────────────────
+export async function playgroundAction(
+  query: string
+): Promise<{
+  ok: boolean;
+  answer?: string;
+  chunks?: { title: string; similarity: number; content: string }[];
+  model?: string;
+  message?: string;
+}> {
+  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
+  if (query.trim().length < 2) return { ok: false, message: "پرسش خالی است." };
+  try {
+    const chunks = await retrieve(query.trim());
+    const context = buildContext(chunks);
+    const basePrompt = await getActivePrompt();
+    const modelCfg = await getModelConfig("web");
+    const system = context
+      ? `${basePrompt}\n\n# منابع بازیابی‌شده\nفقط از منابع زیر استفاده کن:\n\n${context}`
+      : `${basePrompt}\n\n(منبعی یافت نشد.)`;
+    // بدون onFinish و بدون ابزار ⇒ چیزی در دیتابیس ذخیره نمی‌شود
+    const result = streamChat({
+      model: modelCfg.active_model,
+      system,
+      messages: [{ role: "user", content: query.trim() }],
+      temperature: modelCfg.temperature,
+      topP: modelCfg.top_p,
+      maxOutputTokens: modelCfg.max_tokens,
+    });
+    const answer = await result.text;
+    return {
+      ok: true,
+      answer: answer || "—",
+      model: modelCfg.active_model,
+      chunks: chunks.map((c) => ({
+        title: c.title,
+        similarity: Math.round(c.similarity * 100) / 100,
+        content: c.content.slice(0, 320),
+      })),
+    };
+  } catch (e) {
+    return { ok: false, message: (e as Error).message };
+  }
 }
 
 // ── تلگرام ───────────────────────────────────────────────────────

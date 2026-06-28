@@ -17,7 +17,27 @@ export type Lead = {
   challenge: string;
   preferred_time: string | null;
   status: LeadStatus;
+  source?: string | null;
 };
+
+function exportCsv(leads: Lead[]) {
+  const headers = [
+    "نام", "تلفن", "ایمیل", "کسب‌وکار", "حوزه", "مرحله", "چالش", "زمان تماس", "منبع", "وضعیت", "تاریخ",
+  ];
+  const rows = leads.map((l) => [
+    l.full_name, l.phone, l.email ?? "", l.business_name, l.industry ?? "",
+    l.stage, l.challenge, l.preferred_time ?? "", l.source ?? "website",
+    l.status, new Date(l.created_at).toLocaleString("fa-IR"),
+  ]);
+  const esc = (s: string) => `"${String(s).replace(/"/g, '""')}"`;
+  const csv = "﻿" + [headers, ...rows].map((r) => r.map(esc).join(",")).join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `arkan-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
   new: { label: "جدید", className: "bg-brass/15 text-brass-dark" },
@@ -83,7 +103,8 @@ export default function LeadsManager({
 
   return (
     <>
-      <div className="mb-6">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
           <h1 className="font-heading text-h3 font-bold text-pine">
             درخواست‌های مشاوره
           </h1>
@@ -91,6 +112,16 @@ export default function LeadsManager({
             مجموعاً {toFa(leads.length)} درخواست ثبت شده است.
           </p>
         </div>
+        {leads.length > 0 && (
+          <button
+            type="button"
+            onClick={() => exportCsv(filtered)}
+            className="shrink-0 rounded-btn border border-pine/25 px-4 py-2 text-caption text-pine transition-colors hover:bg-pine/5"
+          >
+            خروجی CSV
+          </button>
+        )}
+      </div>
 
         {error ? (
           <div className="rounded-card border border-red-200 bg-red-50 px-5 py-4 text-body text-red-700">
