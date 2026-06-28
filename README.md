@@ -1,93 +1,107 @@
-# آرکان — وب‌سایت + چت‌بات (فاز ۲)
+# آرکان — وب‌سایت + چت‌بات RAG (فاز ۲)
 
-> **این مخزن، فاز دوم پروژه‌ی آرکان است و ادامه‌ی مستقیم فاز اول.**
-> فاز ۲ شامل **تمام محتوای فاز اول (وب‌سایت کامل)** به‌علاوه‌ی **چت‌بات** است که روی همان
-> پایه ساخته می‌شود. پایگاه داده‌ی Supabase با فاز اول مشترک است.
->
-> - فاز ۱ (فقط وب‌سایت): [github.com/siavash-smf/arkan-website](https://github.com/siavash-smf/arkan-website) — نسخه‌ی پایدار با برچسب `v1-website`
-> - فاز ۲ (وب‌سایت + چت‌بات): همین مخزن
+وب‌سایت رسمی **آرکان** (مشاور استراتژی و رشد کسب‌وکار) به‌علاوه‌ی یک **چت‌بات هوشمند با معماری RAG** و **چندکاناله**. این مخزن فاز دوم پروژه است و شامل تمام محتوای فاز اول (وب‌سایت کامل) + چت‌بات می‌شود.
 
-وب‌سایت رسمی **آرکان** — مشاور استراتژی و رشد کسب‌وکار. یک صفحه‌ی تک‌اسکرولی با
-هدف واحد: رساندن بازدیدکننده به **فرم درخواست مشاوره** — و در فاز ۲، یک چت‌بات برای
-پاسخ‌گویی و هدایت کاربر به همان فرم.
+- 🌐 **دموی زنده:** [arkan-website-chatbot.vercel.app](https://arkan-website-chatbot.vercel.app)
+- 💬 صفحه‌ی چت: `/consultant` · ویجت روی صفحه‌ی اصلی · بات تلگرام [@arkanchat_bot](https://t.me/arkanchat_bot)
+- 🛠️ پنل مدیریت: `/admin`
+- فاز ۱ (فقط وب‌سایت): [github.com/siavash-smf/arkan-website](https://github.com/siavash-smf/arkan-website)
 
-## 🎓 برای دانشجویان
+---
 
-این کل وب‌سایت با یک **پرامپت** و کمک دستیار هوش مصنوعی (Claude Code) ساخته شده است.
-من همان پرامپتی که استفاده کردم را در فولدر مخصوص خودش به شکل `md` قرار داده‌ام تا
-بتوانید از آن یاد بگیرید و استفاده کنید:
+## 🎓 برای دانشجویان — این پروژه با پرامپت ساخته شده
 
-> 📄 **[پرامپت استفاده شده / arkan-website-claude-code-prompt.md](پرامپت%20استفاده%20شده/arkan-website-claude-code-prompt.md)**
+این چت‌بات با کمک دستیار هوش مصنوعی (**Claude Code**) و **دقیقاً همان پرامپتی** که اینجا گذاشته‌ام ساخته شده است. همه‌چیز را قرار داده‌ام تا بتوانید بخوانید، یاد بگیرید و خودتان بازسازی کنید:
 
-داخل این فایل، **همان پرامپتی** که برای ساخت این پروژه به Claude Code داده شد به‌طور
-کامل آمده است.
+### ۱) پرامپت ساخت چت‌بات
+> 📄 **[پرامپت استفاده شده / arkan-chatbot-claude-code-prompt.md](پرامپت%20استفاده%20شده/arkan-chatbot-claude-code-prompt.md)**
 
-**چطور از آن استفاده کنید:**
+این **همان پرامپتی** است که برای ساخت کل چت‌بات (مغز RAG، سه کانال، پنل مدیریت) به Claude Code داده شد. کافی است آن را همراه اسناد مرجع به دستیار بدهید تا پروژه‌ی مشابه را بسازد.
 
-1. فایل پرامپت را در فولدر [`پرامپت استفاده شده/`](پرامپت%20استفاده%20شده/) باز کنید و بخوانید.
-2. دو سند مرجع پروژه را با اطلاعات کسب‌وکار خودتان جایگزین کنید
-   (این دو در فولدر [`اطلاعات و برند گاید شرکت/`](اطلاعات%20و%20برند%20گاید%20شرکت/) قرار دارند):
-   - `arkan-client-brief.md` — پروفایل کسب‌وکار، خدمات، محتوا
-   - `arkan-brand-guide.md` — رنگ‌ها، فونت‌ها، لحن برند
-3. پرامپت را (با همان ساختار) به دستیار هوش مصنوعی بدهید تا سایت شما را بسازد.
-4. خروجی را با همین مخزن مقایسه کنید و یاد بگیرید هر بخش چطور پیاده شده است.
+### ۲) فایل System Prompt چت‌بات
+> 📄 **[arkan-chatbot-system-prompt.md](arkan-chatbot-system-prompt.md)**
 
-> نکته: کیفیت خروجی هوش مصنوعی مستقیماً به کیفیت پرامپت و اسناد مرجع شما بستگی دارد.
-> هرچه بریف و برند گاید دقیق‌تر باشند، نتیجه حرفه‌ای‌تر خواهد بود.
+این فایل، **system prompt پایه‌ی** چت‌بات است (شخصیت، لحن، قوانین رفتاری و تفاوت‌های هر کانال). می‌توانید بخوانیدش تا ببینید رفتار بات چطور کنترل می‌شود. در عمل، این متن در جدول `prompt_versions` ذخیره می‌شود و از **پنل مدیریت → پرسونا** قابل ویرایش و نسخه‌بندی است.
 
-## استک
+### ۳) اسناد مرجع و داده‌ها
+- 📁 [`اطلاعات و برند گاید شرکت/`](اطلاعات%20و%20برند%20گاید%20شرکت/) — بریف کسب‌وکار و برند گاید (مبنای محتوا و لحن).
+- 📁 [`knowledge-base/`](knowledge-base/) — داده‌های واقعی شرکت در فرمت‌های گوناگون (md/yaml/csv/json/…) که با `manifest.json` به سیستم RAG تزریق می‌شوند.
 
-- **Next.js 14** (App Router) + **TypeScript**
-- **Tailwind CSS** با توکن‌های برند آرکان
-- RTL کامل (فارسی) — فونت **استعداد** (عناوین) و **وزیرمتن** (بدنه) به‌صورت لوکال
-- فرم با **Server Action** + اعتبارسنجی **zod** + ذخیره در **Supabase**
+### ۴) راهنمای ارزیابی چت‌بات (مرجع آموزشی)
+- 📄 [`arkan-chatbot-evaluation-guide.md`](arkan-chatbot-evaluation-guide.md) — چطور کیفیت یک چت‌بات RAG را اصولی بسنجیم.
+- 📄 [`arkan-chatbot-test-set.md`](arkan-chatbot-test-set.md) — مجموعه‌ی آزمون «خط‌کش» (Golden Set).
+- 📄 [`arkan-chatbot-evaluation-report-template.md`](arkan-chatbot-evaluation-report-template.md) — قالب گزارش ارزیابی.
+
+> 💡 **چطور استفاده کنید:** اسناد مرجع و `knowledge-base/` را با اطلاعات کسب‌وکار خودتان جایگزین کنید، سپس پرامپت ساخت چت‌بات را به دستیار بدهید. خروجی را با همین مخزن مقایسه کنید.
+
+---
+
+## معماری: «یک مغز، چند کانال»
+
+یک هسته‌ی مرکزی همه‌ی منطق گفتگو، RAG و تماس با مدل را مدیریت می‌کند؛ کانال‌ها فقط لایه‌ی ورودی/نمایش‌اند.
+
+```
+src/lib/rag/            ← مغز مرکزی (مستقل از کانال)
+  config.ts             پیکربندی مدل/embedding/پرسونا از دیتابیس
+  embeddings.ts         تبدیل متن به بردار (Cohere چندزبانه)
+  chunking.ts           قطعه‌بندی متن
+  ingest.ts             استخراج متن چندفرمتی + ذخیره در pgvector
+  retrieve.ts           جست‌وجوی برداری + citations
+  generate.ts           تولید استریمی از طریق OpenRouter
+  chat.ts               ارکستریتور (handleChatTurn / getReplyText) + ابزار ثبت لید
+  analytics.ts          آمار داشبورد
+
+کانال‌ها:
+  src/app/consultant/   صفحه‌ی چت تمام‌صفحه (استریمی)
+  public/widget.js + src/app/widget/   ویجت قابل‌جاسازی روی هر سایت
+  src/app/api/telegram/webhook/         کانال تلگرام
+```
+
+## استک فنی
+- **Next.js 14** (App Router) + **TypeScript** + **Tailwind** (RTL کامل)
+- **Supabase + pgvector** برای ذخیره و جست‌وجوی برداری (مشترک با وب‌سایت)
+- **OpenRouter** برای تولید پاسخ (یک کلید، همه‌ی مدل‌ها — پیش‌فرض Gemini 3.5 Flash، استریمی)
+- **Cohere** `embed-multilingual-v3.0` برای embedding چندزبانه (۱۰۲۴ بعدی)
+- **Telegram Bot API** با Webhook
 - آماده‌ی استقرار روی **Vercel**
+
+## پنل مدیریت (`/admin`)
+داشبورد (آمار + هزینه‌ی توکن به‌تفکیک مدل) · لیدها (با خروجی CSV) · پایگاه دانش (آپلود چندفرمتی) · مدل‌ها و Embedding · گفتگوها · بازخورد و سؤالات بی‌جواب · پلی‌گراند · پرسونا · ویجت · تلگرام.
+
+---
 
 ## راه‌اندازی
 
 ```bash
 npm install
-cp .env.local.example .env.local   # سپس کلیدهای Supabase را وارد کنید
+cp .env.local.example .env.local   # سپس کلیدها را وارد کنید
 npm run dev
 ```
 
-سایت روی http://localhost:3000 بالا می‌آید.
-
-> تا زمانی که کلیدهای Supabase تنظیم نشده باشند، فرم در حالت **فالبک** کار می‌کند و
-> درخواست‌ها در کنسول سرور لاگ می‌شوند — توسعه بدون پایگاه داده هم ممکن است.
-
-## اتصال Supabase
-
-1. در پروژه‌ی Supabase، فایل [`supabase/schema.sql`](supabase/schema.sql) را در
-   **SQL Editor** اجرا کنید (ساخت جدول `leads`).
-2. از `Settings → API` مقادیر زیر را در `.env.local` قرار دهید:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY` (فقط سمت سرور؛ هرگز در کلاینت افشا نمی‌شود)
-3. درخواست‌ها از سمت سرور با کلید SERVICE_ROLE درج می‌شوند و RLS امن می‌ماند.
-
-## اطلاع‌رسانی ایمیل (اختیاری)
-
-قلاب آماده‌ی Resend در [`src/app/actions.ts`](src/app/actions.ts) کامنت‌گذاری شده است؛
-با تنظیم `RESEND_API_KEY` و خارج‌کردن از کامنت فعال می‌شود.
-
-## ساختار
-
+### متغیرهای محیطی (`.env.local`)
 ```
-src/
-  app/        layout (RTL/SEO) · page · actions (server) · globals.css
-  components/  Header · Hero · Services · Pillars · Process · Credibility
-               ConsultationForm · Footer · ui/*
-  lib/         supabase · validation (zod) · utils
-public/
-  fonts/  images/  favicon.svg
-supabase/schema.sql
+NEXT_PUBLIC_SUPABASE_URL= / SUPABASE_SERVICE_ROLE_KEY=   # دیتابیس
+ADMIN_PASSWORD= / ADMIN_SESSION_SECRET=                  # ورود پنل
+OPENROUTER_API_KEY=                                      # تولید پاسخ
+COHERE_API_KEY= (+ EMBEDDING_PROVIDER/MODEL)             # embedding
+TELEGRAM_BOT_TOKEN= / TELEGRAM_WEBHOOK_SECRET=           # کانال تلگرام
 ```
 
-## استقرار روی Vercel
+### پایگاه داده (در SQL Editor سوپابیس اجرا کنید)
+1. [`supabase/schema.sql`](supabase/schema.sql) — جدول `leads`
+2. [`supabase/chatbot-schema.sql`](supabase/chatbot-schema.sql) — pgvector + جداول چت‌بات + `match_chunks`
+3. [`supabase/widget-schema.sql`](supabase/widget-schema.sql) — پیکربندی ویجت
 
-پروژه را به Vercel متصل کنید و همان متغیرهای محیطی `.env.local` را در
-`Project Settings → Environment Variables` وارد کنید.
+### بارگذاری پایگاه دانش
+```bash
+node scripts/ingest-kb.mjs   # اسناد knowledge-base را با Cohere ایندکس می‌کند
+```
+
+### نصب ویجت روی هر سایت
+```html
+<script src="https://arkan-website-chatbot.vercel.app/widget.js" async></script>
+```
 
 ---
 
-© آرکان — مشاور استراتژی و رشد کسب‌وکار
+© آرکان — مشاور استراتژی و رشد کسب‌وکار · ساخته‌شده با Next.js و Claude Code
