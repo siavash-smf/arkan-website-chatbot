@@ -8,6 +8,7 @@ const TABS = [
   { key: "models", label: "مدل‌ها", href: "/admin/models" },
   { key: "conversations", label: "گفتگوها", href: "/admin/conversations" },
   { key: "persona", label: "پرسونا", href: "/admin/persona" },
+  { key: "widget", label: "ویجت", href: "/admin/widget" },
 ] as const;
 
 export type AdminTab = (typeof TABS)[number]["key"];

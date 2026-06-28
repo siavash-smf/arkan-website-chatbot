@@ -207,6 +207,35 @@ export async function activatePromptAction(id: string): Promise<ActionResult> {
   return error ? { ok: false, message: error.message } : { ok: true, message: "این نسخه فعال شد." };
 }
 
+// ── پیکربندی ویجت ───────────────────────────────────────────────
+export async function saveWidgetConfigAction(values: {
+  enabled: boolean;
+  primary_color: string;
+  position: string;
+  welcome_message: string;
+  launcher_text: string;
+  allowed_domains: string[];
+}): Promise<ActionResult> {
+  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return { ok: false, message: "اتصال Supabase برقرار نیست." };
+
+  const { data: existing } = await supabase
+    .from("widget_config")
+    .select("id")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const payload = { ...values, updated_at: new Date().toISOString() };
+  const { error } = existing
+    ? await supabase.from("widget_config").update(payload).eq("id", existing.id)
+    : await supabase.from("widget_config").insert(payload);
+
+  revalidatePath("/admin/widget");
+  return error ? { ok: false, message: error.message } : { ok: true, message: "تنظیمات ویجت ذخیره شد." };
+}
+
 // ── جزئیات یک گفتگو (پیام‌ها + منابع RAG هر پاسخ) ───────────────
 export type ConvMessage = {
   id: string;
