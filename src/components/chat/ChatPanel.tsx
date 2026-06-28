@@ -31,6 +31,19 @@ function decodeMeta(b64: string): { conversationId: string | null; sources: Sour
 let idCounter = 0;
 const nextId = () => `m${++idCounter}`;
 
+// رندر سبکِ **پررنگ** بدون کتابخانه‌ی markdown؛ خطوط با whitespace-pre-wrap حفظ می‌شوند.
+function renderBold(text: string): React.ReactNode[] {
+  return text.split(/\*\*(.+?)\*\*/g).map((part, i) =>
+    i % 2 === 1 ? (
+      <strong key={i} className="font-semibold">
+        {part}
+      </strong>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 export default function ChatPanel() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -240,7 +253,7 @@ function MessageBubble({ msg }: { msg: Msg }) {
                 : "rounded-card rounded-tl-sm border border-sand bg-white px-4 py-3 text-[0.95rem] leading-8 text-ink shadow-soft"
           }
         >
-          <p className="whitespace-pre-wrap">{msg.content || "…"}</p>
+          <p className="whitespace-pre-wrap">{msg.content ? renderBold(msg.content) : "…"}</p>
         </div>
 
         {/* منابع */}
