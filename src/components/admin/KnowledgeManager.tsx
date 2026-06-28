@@ -6,7 +6,7 @@ import { toFa } from "@/lib/utils";
 import {
   ingestTextAction,
   ingestUrlAction,
-  ingestPdfAction,
+  ingestFilesAction,
   deleteDocAction,
   reindexDocAction,
   testSearchAction,
@@ -21,8 +21,11 @@ export type DocRow = {
   status: string;
   chunk_count: number;
   error: string | null;
+  tags: string[] | null;
   created_at: string;
 };
+
+const FILE_ACCEPT = ".md,.markdown,.txt,.csv,.json,.yaml,.yml,.html,.htm,.pdf";
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   pending: { label: "در صف", cls: "bg-sand text-slate" },
@@ -31,7 +34,7 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
   error: { label: "خطا", cls: "bg-red-100 text-red-700" },
 };
 
-type Tab = "text" | "url" | "pdf";
+type Tab = "text" | "url" | "file";
 
 export default function KnowledgeManager({ docs, error }: { docs: DocRow[]; error: string | null }) {
   const router = useRouter();
@@ -66,7 +69,7 @@ export default function KnowledgeManager({ docs, error }: { docs: DocRow[]; erro
       <section className="rounded-card border border-sand bg-white p-6 shadow-soft">
         <h2 className="mb-4 font-heading text-body font-semibold text-pine">افزودن منبع جدید</h2>
         <div className="mb-5 flex gap-1 border-b border-sand">
-          {([["text", "متن"], ["url", "آدرس وب"], ["pdf", "فایل PDF"]] as [Tab, string][]).map(
+          {([["text", "متن"], ["url", "آدرس وب"], ["file", "فایل"]] as [Tab, string][]).map(
             ([k, label]) => (
               <button
                 key={k}
@@ -92,14 +95,9 @@ export default function KnowledgeManager({ docs, error }: { docs: DocRow[]; erro
           </div>
         )}
 
-        {tab === "text" && <TextForm pending={pending} onSubmit={(t, c) => run(ingestTextAction(t, c))} />}
-        {tab === "url" && <UrlForm pending={pending} onSubmit={(u, t) => run(ingestUrlAction(u, t))} />}
-        {tab === "pdf" && (
-          <PdfForm
-            pending={pending}
-            onSubmit={(fd) => run(ingestPdfAction(fd))}
-          />
-        )}
+        {tab === "text" && <TextForm pending={pending} onSubmit={(t, c, tags) => run(ingestTextAction(t, c, tags))} />}
+        {tab === "url" && <UrlForm pending={pending} onSubmit={(u, t, tags) => run(ingestUrlAction(u, t, tags))} />}
+        {tab === "file" && <FilesForm pending={pending} onSubmit={(fd) => run(ingestFilesAction(fd))} />}
       </section>
 
       {/* جست‌وجوی آزمایشی */}
@@ -129,6 +127,15 @@ export default function KnowledgeManager({ docs, error }: { docs: DocRow[]; erro
                         {d.source_type} · {toFa(d.chunk_count)} قطعه
                       </span>
                     </div>
+                    {d.tags && d.tags.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {d.tags.map((t) => (
+                          <span key={t} className="rounded-full bg-sand px-2 py-0.5 text-[0.7rem] text-pine">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     {d.error && <p className="mt-1 text-[0.8rem] text-red-600">{d.error}</p>}
                   </div>
                   <div className="flex shrink-0 gap-2">
@@ -167,9 +174,19 @@ const labelCls = "mb-1.5 block text-caption font-medium text-ink";
 const submitCls =
   "inline-flex min-h-[44px] items-center justify-center rounded-btn bg-pine px-6 py-2.5 text-[0.95rem] font-medium text-bone transition-colors hover:bg-pine-dark disabled:opacity-60";
 
-function TextForm({ pending, onSubmit }: { pending: boolean; onSubmit: (t: string, c: string) => void }) {
+function TagsInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className={labelCls}>برچسب‌ها (اختیاری، با ویرگول جدا کنید)</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} placeholder="مثلاً: خدمات، قیمت" />
+    </div>
+  );
+}
+
+function TextForm({ pending, onSubmit }: { pending: boolean; onSubmit: (t: string, c: string, tags?: string) => void }) {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [tags, setTags] = useState("");
   return (
     <div className="space-y-4">
       <div>
@@ -180,16 +197,18 @@ function TextForm({ pending, onSubmit }: { pending: boolean; onSubmit: (t: strin
         <label className={labelCls}>متن</label>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={6} className={`${inputCls} resize-y leading-7`} placeholder="متن منبع را اینجا بچسبانید…" />
       </div>
-      <button type="button" disabled={pending || !title.trim() || text.trim().length < 20} onClick={() => onSubmit(title, text)} className={submitCls}>
+      <TagsInput value={tags} onChange={setTags} />
+      <button type="button" disabled={pending || !title.trim() || text.trim().length < 20} onClick={() => onSubmit(title, text, tags || undefined)} className={submitCls}>
         {pending ? "در حال پردازش…" : "افزودن و ایندکس"}
       </button>
     </div>
   );
 }
 
-function UrlForm({ pending, onSubmit }: { pending: boolean; onSubmit: (u: string, t?: string) => void }) {
+function UrlForm({ pending, onSubmit }: { pending: boolean; onSubmit: (u: string, t?: string, tags?: string) => void }) {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
+  const [tags, setTags] = useState("");
   return (
     <div className="space-y-4">
       <div>
@@ -200,39 +219,41 @@ function UrlForm({ pending, onSubmit }: { pending: boolean; onSubmit: (u: string
         <label className={labelCls}>عنوان (اختیاری)</label>
         <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="در صورت خالی، از عنوان صفحه استفاده می‌شود" />
       </div>
-      <button type="button" disabled={pending || !url.trim()} onClick={() => onSubmit(url, title || undefined)} className={submitCls}>
+      <TagsInput value={tags} onChange={setTags} />
+      <button type="button" disabled={pending || !url.trim()} onClick={() => onSubmit(url, title || undefined, tags || undefined)} className={submitCls}>
         {pending ? "در حال پردازش…" : "دریافت و ایندکس"}
       </button>
     </div>
   );
 }
 
-function PdfForm({ pending, onSubmit }: { pending: boolean; onSubmit: (fd: FormData) => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [title, setTitle] = useState("");
+function FilesForm({ pending, onSubmit }: { pending: boolean; onSubmit: (fd: FormData) => void }) {
+  const [files, setFiles] = useState<File[]>([]);
+  const [tags, setTags] = useState("");
   return (
     <div className="space-y-4">
       <div>
-        <label className={labelCls}>فایل PDF (حداکثر ۱۰ مگابایت)</label>
+        <label className={labelCls}>فایل‌ها (md، txt، csv، json، yaml، html، pdf — حداکثر ۱۰ مگابایت هر فایل)</label>
         <input
           type="file"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          multiple
+          accept={FILE_ACCEPT}
+          onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
           className="block w-full text-[0.9rem] text-slate file:ml-3 file:rounded-btn file:border-0 file:bg-sand file:px-4 file:py-2 file:text-pine"
         />
+        {files.length > 0 && (
+          <p className="mt-1.5 text-[0.8rem] text-slate">{toFa(files.length)} فایل انتخاب شد.</p>
+        )}
       </div>
-      <div>
-        <label className={labelCls}>عنوان (اختیاری)</label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder="در صورت خالی، نام فایل استفاده می‌شود" />
-      </div>
+      <TagsInput value={tags} onChange={setTags} />
       <button
         type="button"
-        disabled={pending || !file}
+        disabled={pending || files.length === 0}
         onClick={() => {
-          if (!file) return;
+          if (files.length === 0) return;
           const fd = new FormData();
-          fd.append("file", file);
-          if (title) fd.append("title", title);
+          files.forEach((f) => fd.append("files", f));
+          if (tags) fd.append("tags", tags);
           onSubmit(fd);
         }}
         className={submitCls}

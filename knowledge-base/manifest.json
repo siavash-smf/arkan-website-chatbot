@@ -1,0 +1,30 @@
+{
+  "knowledge_base": "آرکان — دانش‌نامه‌ی چت‌بات (RAG)",
+  "version": "1.0.0",
+  "language": "fa",
+  "last_updated": "1405-04-07",
+  "description": "فهرست تمام اسناد دانش‌نامه برای تزریق به سیستم RAG چت‌بات شرکت آرکان. هر رکورد متادیتای یک سند است.",
+  "documents": [
+    { "id": "company-profile", "title": "شناسنامه و معرفی شرکت", "path": "01-company/company-profile.md", "format": "md", "topic": "معرفی شرکت", "audience": "عمومی" },
+    { "id": "company-facts", "title": "حقایق سریع شرکت", "path": "01-company/company-facts.yaml", "format": "yaml", "topic": "داده‌ی ساختاریافته", "audience": "چت‌بات" },
+    { "id": "team", "title": "تیم و رهبری", "path": "01-company/team.md", "format": "md", "topic": "تیم", "audience": "عمومی" },
+    { "id": "company-profile-docx", "title": "معرفی شرکت (نسخه DOCX)", "path": "01-company/company-profile.docx", "format": "docx", "topic": "معرفی شرکت", "audience": "عمومی" },
+    { "id": "services-catalog", "title": "کاتالوگ خدمات", "path": "02-services/services-catalog.json", "format": "json", "topic": "خدمات", "audience": "چت‌بات" },
+    { "id": "service-details", "title": "شرح تفصیلی خدمات", "path": "02-services/service-details.md", "format": "md", "topic": "خدمات", "audience": "عمومی" },
+    { "id": "four-pillars", "title": "متدولوژی چهار رکن", "path": "02-services/four-pillars-methodology.md", "format": "md", "topic": "متدولوژی", "audience": "عمومی" },
+    { "id": "pricing-packages", "title": "بسته‌ها و قیمت‌گذاری", "path": "02-services/pricing-packages.csv", "format": "csv", "topic": "قیمت", "audience": "عمومی" },
+    { "id": "engagement-process", "title": "فرایند همکاری", "path": "03-process/engagement-process.md", "format": "md", "topic": "فرایند", "audience": "عمومی" },
+    { "id": "onboarding-checklist", "title": "چک‌لیست شروع همکاری", "path": "03-process/client-onboarding-checklist.md", "format": "md", "topic": "فرایند", "audience": "مشتری" },
+    { "id": "faq", "title": "پرسش‌های متداول", "path": "04-support/faq.json", "format": "json", "topic": "پشتیبانی", "audience": "چت‌بات" },
+    { "id": "objection-handling", "title": "پاسخ به نگرانی‌های رایج", "path": "04-support/objection-handling.md", "format": "md", "topic": "پشتیبانی فروش", "audience": "داخلی" },
+    { "id": "contact-and-hours", "title": "تماس و ساعات کاری", "path": "04-support/contact-and-hours.txt", "format": "txt", "topic": "تماس", "audience": "عمومی" },
+    { "id": "case-studies", "title": "مطالعات موردی", "path": "05-proof/case-studies.md", "format": "md", "topic": "اعتبار", "audience": "عمومی" },
+    { "id": "testimonials", "title": "نظرات مشتریان", "path": "05-proof/testimonials.json", "format": "json", "topic": "اعتبار", "audience": "چت‌بات" },
+    { "id": "blog-growth-mistakes", "title": "سه اشتباه رایج در رشد", "path": "06-content/blog-growth-mistakes.md", "format": "md", "topic": "مقاله", "audience": "عمومی" },
+    { "id": "blog-business-model", "title": "کِی مدل کسب‌وکار را بازطراحی کنیم", "path": "06-content/blog-business-model.md", "format": "md", "topic": "مقاله", "audience": "عمومی" },
+    { "id": "glossary", "title": "واژه‌نامه‌ی اصطلاحات", "path": "06-content/glossary.csv", "format": "csv", "topic": "واژه‌نامه", "audience": "چت‌بات" },
+    { "id": "policies", "title": "سیاست‌ها و شرایط همکاری", "path": "07-policies/policies.md", "format": "md", "topic": "سیاست‌ها", "audience": "عمومی" },
+    { "id": "company-brochure-html", "title": "بروشور شرکت (HTML)", "path": "07-policies/company-brochure.html", "format": "html", "topic": "معرفی شرکت", "audience": "عمومی" },
+    { "id": "company-brochure-pdf", "title": "بروشور شرکت (PDF)", "path": "07-policies/company-brochure.pdf", "format": "pdf", "topic": "معرفی شرکت", "audience": "عمومی" }
+  ]
+}

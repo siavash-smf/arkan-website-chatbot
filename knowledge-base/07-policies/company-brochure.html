@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<title>بروشور آرکان — مشاور استراتژی و رشد کسب‌وکار</title>
+<style>
+  @font-face {
+    font-family: 'Estedad';
+    src: url('../../public/fonts/Estedad-Bold.woff2') format('woff2');
+    font-weight: 700; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Estedad';
+    src: url('../../public/fonts/Estedad-SemiBold.woff2') format('woff2');
+    font-weight: 600; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../public/fonts/Vazirmatn-Regular.woff2') format('woff2');
+    font-weight: 400; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../public/fonts/Vazirmatn-Medium.woff2') format('woff2');
+    font-weight: 500; font-display: swap;
+  }
+
+  :root {
+    --pine: #143A32;
+    --brass: #B5853A;
+    --bone: #F7F3EC;
+    --sand: #E7DECF;
+    --ink: #15201C;
+    --slate: #5A5F5B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4; margin: 0; }
+  html, body { background: var(--bone); }
+  body {
+    font-family: 'Vazirmatn', sans-serif;
+    color: var(--ink);
+    line-height: 1.8;
+    font-size: 13px;
+  }
+  h1, h2, h3 { font-family: 'Estedad', sans-serif; line-height: 1.3; }
+
+  .page {
+    width: 210mm; min-height: 297mm;
+    margin: 0 auto; padding: 18mm 16mm;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  /* Header */
+  .hero {
+    background: var(--pine); color: var(--bone);
+    border-radius: 12px; padding: 26px 28px;
+    position: relative; overflow: hidden;
+  }
+  .pillars { display: flex; gap: 6px; margin-bottom: 14px; }
+  .pillars span { display: block; width: 7px; background: var(--brass); border-radius: 3px; }
+  .pillars span:nth-child(1) { height: 22px; }
+  .pillars span:nth-child(2) { height: 32px; }
+  .pillars span:nth-child(3) { height: 26px; }
+  .pillars span:nth-child(4) { height: 36px; }
+  .hero h1 { font-size: 30px; font-weight: 700; margin-bottom: 6px; }
+  .hero .sub { color: var(--sand); font-size: 14px; }
+  .hero .tagline { margin-top: 14px; font-size: 16px; color: #fff; font-family: 'Estedad'; font-weight: 600; }
+
+  /* Intro */
+  .intro { font-size: 14px; color: var(--ink); }
+  .intro strong { color: var(--pine); }
+
+  .section-title {
+    color: var(--pine); font-size: 17px; font-weight: 700;
+    border-right: 4px solid var(--brass); padding-right: 10px; margin-bottom: 10px;
+  }
+
+  /* Pillars grid */
+  .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card {
+    background: #fff; border: 1px solid var(--sand);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .card h3 { color: var(--pine); font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .card .q { color: var(--brass); font-size: 11px; margin-bottom: 4px; }
+  .card p { color: var(--slate); font-size: 12px; }
+
+  /* Services list */
+  .services { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .services li {
+    list-style: none; font-size: 13px; padding-right: 16px; position: relative;
+  }
+  .services li::before {
+    content: ''; position: absolute; right: 0; top: 9px;
+    width: 7px; height: 7px; background: var(--brass); border-radius: 2px;
+  }
+
+  /* Stats */
+  .stats { display: flex; gap: 10px; }
+  .stat {
+    flex: 1; background: var(--sand); border-radius: 10px; padding: 12px; text-align: center;
+  }
+  .stat .num { font-family: 'Estedad'; font-weight: 700; font-size: 22px; color: var(--pine); }
+  .stat .lbl { font-size: 11px; color: var(--slate); margin-top: 2px; }
+
+  /* Footer */
+  .footer {
+    margin-top: auto; background: var(--pine); color: var(--bone);
+    border-radius: 12px; padding: 16px 22px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  .footer .cta { font-family: 'Estedad'; font-weight: 600; font-size: 14px; }
+  .footer .contact { font-size: 12px; color: var(--sand); text-align: left; line-height: 2; }
+  .footer .contact b { color: #fff; }
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="hero">
+      <div class="pillars"><span></span><span></span><span></span><span></span></div>
+      <h1>آرکان</h1>
+      <div class="sub">مشاور استراتژی و رشد کسب‌وکار</div>
+      <div class="tagline">ستون‌های رشد پایدار را کنار شما می‌سازیم.</div>
+    </div>
+
+    <p class="intro">
+      کسب‌وکار شما به مرحله‌ای رسیده اما در رشد گیر کرده است؟ <strong>آرکان</strong> با استراتژی روشن و اجرای منظم،
+      تا رسیدن به نتیجه‌ی قابل‌اندازه‌گیری کنار شما می‌ماند — نه رشد سریع و پرریسک، بلکه رشدی که می‌ماند.
+    </p>
+
+    <div>
+      <div class="section-title">متدولوژی ما: چهار رکن رشد پایدار</div>
+      <div class="grid4">
+        <div class="card"><div class="q">کجا بازی کنیم؟</div><h3>۱. استراتژی</h3><p>جهت‌گیری روشن و مزیت رقابتی.</p></div>
+        <div class="card"><div class="q">چه کسی اجرا می‌کند؟</div><h3>۲. ساختار</h3><p>سازمان، فرایند و تیمِ توانمند برای اجرا.</p></div>
+        <div class="card"><div class="q">مشتری چطور می‌آید؟</div><h3>۳. بازار</h3><p>برند، بازاریابی و فروشی که مشتری بیاورد.</p></div>
+        <div class="card"><div class="q">چطور نتیجه می‌دهد؟</div><h3>۴. اجرا</h3><p>تبدیل برنامه به نتیجه‌ی قابل‌اندازه‌گیری.</p></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">خدمات ما</div>
+      <ul class="services">
+        <li>مشاوره‌ی استراتژی رشد</li>
+        <li>طراحی ساختار و فرایندهای سازمانی</li>
+        <li>بازطراحی مدل کسب‌وکار</li>
+        <li>مشاوره‌ی فروش و توسعه‌ی بازار</li>
+        <li>استراتژی برند و بازاریابی</li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="section-title">آرکان در یک نگاه</div>
+      <div class="stats">
+        <div class="stat"><div class="num">+۷ سال</div><div class="lbl">سابقه‌ی فعالیت</div></div>
+        <div class="stat"><div class="num">+۲۰۰</div><div class="lbl">پروژه‌ی موفق</div></div>
+        <div class="stat"><div class="num">۱۲</div><div class="lbl">مشاور باتجربه</div></div>
+        <div class="stat"><div class="num">۱۳۹۶</div><div class="lbl">سال تأسیس</div></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="cta">برای شروع، فرم درخواست مشاوره را پر کنید.<br/>تماس اولیه رایگان است.</div>
+      <div class="contact">
+        <b>info@arkan.co</b><br/>
+        <b>۰۲۱-۸۸۰۰۰۰۰۰</b><br/>
+        تهران — arkan.co
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

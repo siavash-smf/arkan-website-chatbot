@@ -8,6 +8,12 @@ import {
   deleteDocument,
   reindexDocument,
 } from "@/lib/rag/ingest";
+
+function parseTags(raw: string | null | undefined): string[] | undefined {
+  if (!raw) return undefined;
+  const tags = raw.split(/[,،]/).map((t) => t.trim()).filter(Boolean);
+  return tags.length ? tags : undefined;
+}
 import { retrieve, type RetrievedChunk } from "@/lib/rag/retrieve";
 
 type ActionResult = { ok: boolean; message?: string };
@@ -19,47 +25,72 @@ function guard(): boolean {
 // ── پایگاه دانش ─────────────────────────────────────────────────
 export async function ingestTextAction(
   title: string,
-  text: string
+  text: string,
+  tagsRaw?: string
 ): Promise<ActionResult> {
   if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
   if (!title.trim() || text.trim().length < 20) {
     return { ok: false, message: "عنوان و متن (حداقل ۲۰ نویسه) لازم است." };
   }
-  const res = await ingestDocument({ type: "text", title: title.trim(), text });
-  revalidatePath("/admin/knowledge");
-  return res.ok
-    ? { ok: true, message: `سند با ${res.chunkCount} قطعه ثبت شد.` }
-    : { ok: false, message: res.error };
-}
-
-export async function ingestUrlAction(url: string, title?: string): Promise<ActionResult> {
-  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
-  if (!/^https?:\/\//i.test(url.trim())) {
-    return { ok: false, message: "آدرس URL معتبر نیست." };
-  }
-  const res = await ingestDocument({ type: "url", url: url.trim(), title: title?.trim() });
-  revalidatePath("/admin/knowledge");
-  return res.ok
-    ? { ok: true, message: `سند با ${res.chunkCount} قطعه ثبت شد.` }
-    : { ok: false, message: res.error };
-}
-
-export async function ingestPdfAction(formData: FormData): Promise<ActionResult> {
-  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
-  const file = formData.get("file") as File | null;
-  const title = (formData.get("title") as string | null)?.trim();
-  if (!file || file.size === 0) return { ok: false, message: "فایلی انتخاب نشده." };
-  if (file.size > 10 * 1024 * 1024) return { ok: false, message: "حجم فایل بیش از ۱۰ مگابایت است." };
-  const buffer = Buffer.from(await file.arrayBuffer());
   const res = await ingestDocument({
-    type: "pdf",
-    title: title || file.name.replace(/\.pdf$/i, ""),
-    buffer,
+    type: "text",
+    title: title.trim(),
+    text,
+    tags: parseTags(tagsRaw),
   });
   revalidatePath("/admin/knowledge");
   return res.ok
     ? { ok: true, message: `سند با ${res.chunkCount} قطعه ثبت شد.` }
     : { ok: false, message: res.error };
+}
+
+export async function ingestUrlAction(
+  url: string,
+  title?: string,
+  tagsRaw?: string
+): Promise<ActionResult> {
+  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
+  if (!/^https?:\/\//i.test(url.trim())) {
+    return { ok: false, message: "آدرس URL معتبر نیست." };
+  }
+  const res = await ingestDocument({
+    type: "url",
+    url: url.trim(),
+    title: title?.trim(),
+    tags: parseTags(tagsRaw),
+  });
+  revalidatePath("/admin/knowledge");
+  return res.ok
+    ? { ok: true, message: `سند با ${res.chunkCount} قطعه ثبت شد.` }
+    : { ok: false, message: res.error };
+}
+
+/** آپلود چند فایل با فرمت‌های گوناگون (md/txt/csv/json/yaml/html/pdf) + تگ مشترک. */
+export async function ingestFilesAction(formData: FormData): Promise<ActionResult> {
+  if (!guard()) return { ok: false, message: "دسترسی غیرمجاز." };
+  const files = formData.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
+  const tags = parseTags(formData.get("tags") as string | null);
+  if (files.length === 0) return { ok: false, message: "فایلی انتخاب نشده." };
+
+  let okCount = 0;
+  const failed: string[] = [];
+  for (const file of files) {
+    if (file.size > 10 * 1024 * 1024) {
+      failed.push(`${file.name} (حجم زیاد)`);
+      continue;
+    }
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const title = file.name.replace(/\.[^.]+$/, "");
+    const res = await ingestDocument({ type: "file", title, filename: file.name, buffer, tags });
+    if (res.ok) okCount++;
+    else failed.push(`${file.name}`);
+  }
+  revalidatePath("/admin/knowledge");
+  if (failed.length === 0) return { ok: true, message: `${okCount} فایل با موفقیت ایندکس شد.` };
+  return {
+    ok: okCount > 0,
+    message: `${okCount} فایل ایندکس شد؛ ${failed.length} ناموفق: ${failed.join("، ").slice(0, 200)}`,
+  };
 }
 
 export async function deleteDocAction(id: string): Promise<ActionResult> {

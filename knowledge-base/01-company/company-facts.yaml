@@ -1,0 +1,68 @@
+# سند: حقایق سریع شرکت آرکان (برای پاسخ‌های کوتاه و دقیق چت‌بات)
+# موضوع: داده‌های ساختاریافته‌ی شرکت
+# آخرین به‌روزرسانی: ۱۴۰۵/۰۴/۰۷
+
+company:
+  brand_name_fa: آرکان
+  full_name_fa: آرکان، مشاور استراتژی و رشد کسب‌وکار
+  name_en: Arkan — Business Strategy & Growth Advisory
+  tagline_fa: ستون‌های رشد پایدار را کنار شما می‌سازیم.
+  founded_year_jalali: 1396
+  founded_year_gregorian: 2017
+  headquarters: تهران، ایران
+  industry: مشاوره‌ی مدیریت، استراتژی و رشد کسب‌وکار
+  archetype: حکیم (Sage) با چاشنی حامی (Caregiver)
+
+contact:
+  email: info@arkan.co
+  phone: "021-88000000"
+  website: arkan.co
+  city: تهران
+  country: ایران
+
+key_numbers:
+  years_active: "7+"
+  successful_projects: "200+"
+  team_size: 12
+  first_response_sla_hours: 24       # ساعت کاری تا اولین تماس
+  initial_call_cost: رایگان
+
+target_market:
+  - کسب‌وکارهای کوچک و متوسط ایرانی
+  - کسب‌وکارهای ایرانی در خارج از کشور (دیاسپورا)
+
+ideal_client:
+  description: بنیان‌گذار یا مدیر کسب‌وکاری با ۵ تا ۵۰ نفر پرسنل که درآمد دارد اما در رشد گیر کرده است.
+  employee_range: 5-50
+  stage_focus:
+    - نوپا
+    - در حال رشد
+    - تثبیت‌شده
+
+methodology_pillars:
+  - استراتژی
+  - ساختار
+  - بازار
+  - اجرا
+
+services:
+  - مشاوره‌ی استراتژی رشد
+  - بازطراحی مدل کسب‌وکار
+  - استراتژی برند و بازاریابی
+  - طراحی ساختار و فرایندهای سازمانی
+  - مشاوره‌ی فروش و توسعه‌ی بازار
+
+values:
+  - صداقت پیش از قرارداد
+  - اجرا، نه فقط توصیه
+  - تصمیم بر پایه‌ی واقعیت
+  - احترام به زمان و سرمایه‌ی مشتری
+  - رشد پایدار به‌جای میان‌بُر
+
+brand_colors:
+  pine: "#143A32"
+  brass: "#B5853A"
+  bone: "#F7F3EC"
+  sand: "#E7DECF"
+  ink: "#15201C"
+  slate: "#5A5F5B"

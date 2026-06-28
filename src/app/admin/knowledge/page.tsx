@@ -19,7 +19,7 @@ export default async function KnowledgePage() {
   } else {
     const { data, error: e } = await supabase
       .from("documents")
-      .select("id, title, source_type, source_url, status, chunk_count, error, created_at")
+      .select("id, title, source_type, source_url, status, chunk_count, error, tags, created_at")
       .order("created_at", { ascending: false });
     if (e) error = e.message;
     else docs = (data as DocRow[]) ?? [];

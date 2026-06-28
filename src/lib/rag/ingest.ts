@@ -11,7 +11,14 @@ import { getEmbeddingConfig } from "./config";
 export type IngestSource =
   | { type: "text"; title: string; text: string; tags?: string[] }
   | { type: "url"; title?: string; url: string; tags?: string[] }
-  | { type: "pdf"; title: string; buffer: Buffer; tags?: string[] };
+  | { type: "pdf"; title: string; buffer: Buffer; tags?: string[] }
+  // فایل عمومی با تشخیص فرمت بر اساس پسوند (md/txt/csv/json/yaml/html/pdf)
+  | { type: "file"; title: string; filename: string; buffer: Buffer; tags?: string[] };
+
+// فرمت‌های فایل پشتیبانی‌شده در آپلود پنل
+export const SUPPORTED_FILE_EXTENSIONS = [
+  ".md", ".markdown", ".txt", ".csv", ".json", ".yaml", ".yml", ".html", ".htm", ".pdf",
+];
 
 export type IngestResult = {
   ok: boolean;
@@ -28,6 +35,7 @@ export async function ingestDocument(source: IngestSource): Promise<IngestResult
   let title: string;
   let text: string;
   let sourceUrl: string | null = null;
+  let sourceType: string = source.type;
   try {
     if (source.type === "text") {
       title = source.title;
@@ -37,9 +45,15 @@ export async function ingestDocument(source: IngestSource): Promise<IngestResult
       const extracted = await extractFromUrl(source.url);
       title = source.title || extracted.title || source.url;
       text = extracted.text;
-    } else {
+    } else if (source.type === "pdf") {
       title = source.title;
       text = await extractFromPdf(source.buffer);
+    } else {
+      // type === "file" — تشخیص فرمت بر اساس پسوند
+      title = source.title;
+      const ext = extOf(source.filename);
+      sourceType = ext.replace(".", "") || "file";
+      text = await extractByExtension(source.filename, source.buffer);
     }
   } catch (e) {
     return { ok: false, error: `استخراج متن ناموفق بود: ${(e as Error).message}` };
@@ -55,7 +69,7 @@ export async function ingestDocument(source: IngestSource): Promise<IngestResult
     .from("documents")
     .insert({
       title,
-      source_type: source.type,
+      source_type: sourceType,
       source_url: sourceUrl,
       status: "processing",
       tags: source.tags ?? null,
@@ -196,4 +210,122 @@ async function extractFromPdf(buffer: Buffer): Promise<string> {
   const parser = new PDFParse({ data: new Uint8Array(buffer) });
   const result = await parser.getText();
   return result.text ?? "";
+}
+
+function extOf(filename: string): string {
+  const m = filename.toLowerCase().match(/\.[a-z0-9]+$/);
+  return m ? m[0] : "";
+}
+
+/** استخراج متن خوانا بر اساس پسوند فایل. */
+async function extractByExtension(filename: string, buffer: Buffer): Promise<string> {
+  const ext = extOf(filename);
+  switch (ext) {
+    case ".pdf":
+      return extractFromPdf(buffer);
+    case ".html":
+    case ".htm":
+      return stripHtml(buffer.toString("utf-8"));
+    case ".csv":
+      return csvToText(buffer.toString("utf-8"));
+    case ".json":
+      return jsonToText(buffer.toString("utf-8"));
+    // md / txt / yaml / yml و سایر فرمت‌های متنی → خود متن
+    case ".md":
+    case ".markdown":
+    case ".txt":
+    case ".yaml":
+    case ".yml":
+      return buffer.toString("utf-8");
+    default:
+      // تلاش برای خواندن به‌صورت متن ساده
+      return buffer.toString("utf-8");
+  }
+}
+
+/** CSV → متن خوانا: هر ردیف به‌صورت «سرستون: مقدار» (مناسب بازیابی معنایی). */
+function csvToText(csv: string): string {
+  const rows = parseCsv(csv);
+  if (rows.length === 0) return "";
+  const headers = rows[0];
+  const lines: string[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const cells = rows[i];
+    if (cells.every((c) => !c.trim())) continue;
+    const pairs = headers
+      .map((h, j) => (cells[j] ? `${h.trim()}: ${cells[j].trim()}` : ""))
+      .filter(Boolean);
+    lines.push(pairs.join(" — "));
+  }
+  return lines.join("\n");
+}
+
+/** پارسر سبک CSV با پشتیبانی از فیلدهای داخل گیومه. */
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+  const src = text.replace(/\r\n/g, "\n");
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inQuotes) {
+      if (ch === '"' && src[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        field += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      row.push(field);
+      field = "";
+    } else if (ch === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += ch;
+    }
+  }
+  if (field || row.length) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+/** JSON → متن خوانا به‌صورت بازگشتی («کلید: مقدار»). برای داده‌های پرسش/پاسخ و کاتالوگ مناسب است. */
+function jsonToText(jsonStr: string): string {
+  let data: unknown;
+  try {
+    data = JSON.parse(jsonStr);
+  } catch {
+    return jsonStr; // اگر JSON نامعتبر بود، خود متن
+  }
+  const out: string[] = [];
+  const walk = (node: unknown, prefix: string) => {
+    if (node === null || node === undefined) return;
+    if (Array.isArray(node)) {
+      node.forEach((item) => walk(item, prefix));
+    } else if (typeof node === "object") {
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        if (v === null || v === undefined) continue;
+        if (typeof v === "object") {
+          walk(v, prefix);
+        } else {
+          out.push(`${prefix}${k}: ${String(v)}`);
+        }
+      }
+      out.push(""); // جداکننده بین آیتم‌ها
+    } else {
+      out.push(`${prefix}${String(node)}`);
+    }
+  };
+  walk(data, "");
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
