@@ -19,6 +19,22 @@ export function getOpenRouter() {
       "HTTP-Referer": "https://arkan-website-chatbot.vercel.app",
       "X-Title": "Arkan Consultant",
     },
+    // محدودکردن reasoning به سطح پایین برای همه‌ی مدل‌ها.
+    // برخی مدل‌ها (مثل Gemini 3.5 Flash) reasoning اجباری دارند و در غیر این صورت ممکن است
+    // کل بودجه‌ی توکن را صرف استدلال کنند و متنی تولید نکنند («No output generated»).
+    // effort=low استدلال را کوتاه می‌کند تا همیشه برای پاسخ متنی جا بماند (و سریع‌تر/ارزان‌تر است).
+    fetch: (async (url: string, options: RequestInit | undefined) => {
+      if (options?.body && typeof options.body === "string") {
+        try {
+          const body = JSON.parse(options.body);
+          body.reasoning = { effort: "low" };
+          options = { ...options, body: JSON.stringify(body) };
+        } catch {
+          /* اگر بدنه JSON نبود، دست‌نخورده بماند */
+        }
+      }
+      return fetch(url, options);
+    }) as typeof fetch,
   });
 }
 
