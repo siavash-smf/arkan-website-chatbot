@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { isAuthed } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import AdminShell from "@/components/admin/AdminShell";
 import LeadsManager, { type Lead } from "@/components/admin/LeadsManager";
 
 export const metadata: Metadata = {
@@ -29,5 +30,9 @@ export default async function AdminPage() {
     else leads = (data as Lead[]) ?? [];
   }
 
-  return <LeadsManager leads={leads} error={error} />;
+  return (
+    <AdminShell active="leads">
+      <LeadsManager leads={leads} error={error} />
+    </AdminShell>
+  );
 }

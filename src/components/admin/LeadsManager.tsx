@@ -2,8 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Logo from "@/components/ui/Logo";
-import { updateLeadStatus, logout, type LeadStatus } from "@/app/admin/actions";
+import { updateLeadStatus, type LeadStatus } from "@/app/admin/actions";
 import { toFa } from "@/lib/utils";
 
 export type Lead = {
@@ -83,29 +82,8 @@ export default function LeadsManager({
   }
 
   return (
-    <div className="min-h-dvh bg-bone">
-      {/* هدر پنل */}
-      <header className="sticky top-0 z-10 border-b border-sand bg-bone/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-          <div className="flex items-center gap-4">
-            <Logo />
-            <span className="hidden text-caption text-slate sm:inline">
-              پنل مدیریت درخواست‌ها
-            </span>
-          </div>
-          <form action={logout}>
-            <button
-              type="submit"
-              className="rounded-btn border border-pine/25 px-4 py-2 text-caption text-pine transition-colors hover:bg-pine/5"
-            >
-              خروج
-            </button>
-          </form>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-5 py-8">
-        <div className="mb-6">
+    <>
+      <div className="mb-6">
           <h1 className="font-heading text-h3 font-bold text-pine">
             درخواست‌های مشاوره
           </h1>
@@ -166,8 +144,7 @@ export default function LeadsManager({
             )}
           </>
         )}
-      </main>
-    </div>
+    </>
   );
 }
 
