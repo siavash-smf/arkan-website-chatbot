@@ -7,6 +7,8 @@ import KnowledgeManager, { type DocRow } from "@/components/admin/KnowledgeManag
 
 export const metadata: Metadata = { title: "پایگاه دانش", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
+// آپلود + embedding ممکن است چند ثانیه طول بکشد
+export const maxDuration = 60;
 
 export default async function KnowledgePage() {
   if (!isAuthed()) redirect("/admin/login");

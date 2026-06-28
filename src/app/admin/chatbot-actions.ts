@@ -241,7 +241,7 @@ export async function playgroundAction(
     const answer = await result.text;
     return {
       ok: true,
-      answer: answer || "—",
+      answer: answer?.trim() || "مدل پاسخ متنی تولید نکرد (احتمالاً سقف توکن صرف استدلال شد). دوباره یا با سؤال دیگری امتحان کنید.",
       model: modelCfg.active_model,
       chunks: chunks.map((c) => ({
         title: c.title,
