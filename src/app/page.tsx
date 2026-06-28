@@ -1,3 +1,4 @@
+import Script from "next/script";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Services from "@/components/Services";
@@ -44,6 +45,8 @@ export default function Home() {
         <ConsultationForm />
       </main>
       <Footer />
+      {/* ویجت چت آرکان روی خود سایت */}
+      <Script src="/widget.js" strategy="afterInteractive" />
     </>
   );
 }
