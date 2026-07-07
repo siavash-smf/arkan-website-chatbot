@@ -32,6 +32,10 @@ function getBlogClient(): SupabaseClient | null {
   if (!url || !key) return null;
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // fetch را no-store می‌کنیم تا کش داده‌ی Next پست‌های جدید بلاگ را پنهان نکند.
+    global: {
+      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    },
   });
 }
 
