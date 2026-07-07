@@ -80,6 +80,104 @@
   }
 }
 
+/* ── بدنه‌ی مقاله‌ی بلاگ (خروجی مارک‌داون) — با پالت برند ─────────── */
+.prose-arkan {
+  color: var(--color-ink);
+  font-size: 1.0625rem;
+  line-height: 2;
+}
+.prose-arkan > *:first-child {
+  margin-top: 0;
+}
+.prose-arkan h1 {
+  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0.5rem 0 1.5rem;
+}
+.prose-arkan h2 {
+  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 2.5rem 0 1rem;
+  padding-inline-start: 0.9rem;
+  border-inline-start: 3px solid var(--color-brass);
+}
+.prose-arkan h3 {
+  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.75rem;
+}
+.prose-arkan p {
+  margin: 0 0 1.25rem;
+}
+.prose-arkan ul,
+.prose-arkan ol {
+  margin: 0 0 1.25rem;
+  padding-inline-start: 1.5rem;
+}
+.prose-arkan li {
+  margin-bottom: 0.5rem;
+}
+.prose-arkan ul li::marker {
+  color: var(--color-brass);
+}
+.prose-arkan ol li::marker {
+  color: var(--color-brass);
+  font-weight: 700;
+}
+.prose-arkan a {
+  color: var(--color-brass);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-arkan strong {
+  font-weight: 700;
+  color: var(--color-pine);
+}
+.prose-arkan blockquote {
+  margin: 1.75rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--color-sand);
+  border-inline-start: 3px solid var(--color-pine);
+  border-radius: 0 12px 12px 0;
+  color: var(--color-ink);
+}
+.prose-arkan blockquote p:last-child {
+  margin-bottom: 0;
+}
+.prose-arkan hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-sand);
+}
+.prose-arkan code {
+  background: var(--color-sand);
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+.prose-arkan table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+}
+.prose-arkan th,
+.prose-arkan td {
+  border: 1px solid var(--color-sand);
+  padding: 0.5rem 0.75rem;
+  text-align: start;
+}
+.prose-arkan th {
+  background: var(--color-sand);
+  font-weight: 600;
+  color: var(--color-pine);
+}
+
 /* عنصر reveal — حالت اولیه پیش از ورود به دید */
 .reveal {
   opacity: 0;

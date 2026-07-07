@@ -4,11 +4,11 @@ import { IconMail, IconPhone, IconPin } from "./ui/icons";
 import { toFa } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "#services", label: "خدمات" },
-  { href: "#pillars", label: "چهار رکن" },
-  { href: "#process", label: "فرایند همکاری" },
-  { href: "#about", label: "درباره‌ی ما" },
-  { href: "#consultation", label: "درخواست مشاوره" },
+  { href: "/#services", label: "خدمات" },
+  { href: "/#pillars", label: "چهار رکن" },
+  { href: "/#process", label: "فرایند همکاری" },
+  { href: "/blog", label: "بلاگ" },
+  { href: "/#consultation", label: "درخواست مشاوره" },
 ];
 
 export default function Footer() {

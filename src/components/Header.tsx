@@ -7,11 +7,12 @@ import Container from "./ui/Container";
 import { IconMenu, IconClose } from "./ui/icons";
 import { cn } from "@/lib/utils";
 
+// لینک‌های لنگری با «/» شروع می‌شوند تا از هر صفحه‌ای (مثل /blog) هم کار کنند
 const NAV_LINKS = [
-  { href: "#services", label: "خدمات" },
-  { href: "#pillars", label: "چهار رکن" },
-  { href: "#process", label: "فرایند همکاری" },
-  { href: "#about", label: "درباره‌ی ما" },
+  { href: "/#services", label: "خدمات" },
+  { href: "/#pillars", label: "چهار رکن" },
+  { href: "/#process", label: "فرایند همکاری" },
+  { href: "/blog", label: "بلاگ" },
   { href: "/consultant", label: "گفت‌وگو با مشاور" },
 ];
 
@@ -50,7 +51,7 @@ export default function Header() {
     >
       <Container className="flex h-[4.5rem] items-center justify-between gap-4">
         {/* لوگو (راست در RTL) */}
-        <a href="#hero" className="rounded-btn" aria-label="آرکان — خانه">
+        <a href="/" className="rounded-btn" aria-label="آرکان — خانه">
           <Logo />
         </a>
 
@@ -72,7 +73,7 @@ export default function Header() {
 
         {/* CTA دسکتاپ (چپ در RTL) */}
         <div className="hidden lg:block">
-          <Button as="a" href="#consultation" variant="primary" size="md">
+          <Button as="a" href="/#consultation" variant="primary" size="md">
             درخواست مشاوره
           </Button>
         </div>
@@ -117,7 +118,7 @@ export default function Header() {
           </nav>
           <Button
             as="a"
-            href="#consultation"
+            href="/#consultation"
             variant="primary"
             size="lg"
             className="mt-4 w-full"
