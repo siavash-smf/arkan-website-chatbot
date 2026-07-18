@@ -9,3 +9,13 @@ export function toFa(input: string | number): string {
 export function cn(...classes: Array<string | false | null | undefined>): string {
   return classes.filter(Boolean).join(" ");
 }
+
+// عدد با جداکننده‌ی هزارگان و ارقام فارسی
+export function faNum(n: number): string {
+  return toFa(n.toLocaleString("en-US"));
+}
+
+// نمایش مبلغ به تومان با ارقام فارسی و جداکننده‌ی هزارگان
+export function formatToman(amount: number): string {
+  return faNum(Math.round(amount)) + " تومان";
+}

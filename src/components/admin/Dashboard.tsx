@@ -1,14 +1,19 @@
-import { toFa } from "@/lib/utils";
+import { faNum, toFa } from "@/lib/utils";
 import { channelLabel, type Analytics } from "@/lib/rag/analytics";
 
-function faNum(n: number): string {
-  return toFa(n.toLocaleString("en-US"));
-}
 function faCost(usd: number): string {
   return "$" + usd.toFixed(usd < 1 ? 4 : 2);
 }
 
-export default function Dashboard({ data, error }: { data: Analytics | null; error: string | null }) {
+export default function Dashboard({
+  data,
+  error,
+  overdueTasks = 0,
+}: {
+  data: Analytics | null;
+  error: string | null;
+  overdueTasks?: number;
+}) {
   return (
     <div className="space-y-8">
       <div>
@@ -32,6 +37,27 @@ export default function Dashboard({ data, error }: { data: Analytics | null; err
             <Stat label="نرخ رضایت" value={`${toFa(data.satisfactionRate)}٪`} hint={`👍 ${toFa(data.feedback.up)} · 👎 ${toFa(data.feedback.down)}`} />
             <Stat label="هزینه‌ی تخمینی" value={faCost(data.totalCostUsd)} hint={`${faNum(data.totalTokens)} توکن`} />
             <Stat label="پاسخ‌های بدون منبع" value={faNum(data.gaps)} hint="شکاف‌های احتمالی دانش" />
+            <a href="/admin/crm/activities" className="block">
+              <div
+                className={`rounded-card border p-5 shadow-soft transition-colors ${
+                  overdueTasks > 0
+                    ? "border-red-200 bg-red-50 hover:bg-red-100/70"
+                    : "border-sand bg-white hover:bg-bone/60"
+                }`}
+              >
+                <p className={`text-caption ${overdueTasks > 0 ? "text-red-700" : "text-slate"}`}>
+                  وظایف معوق CRM
+                </p>
+                <p
+                  className={`nums mt-1 font-heading text-[1.6rem] font-bold leading-tight ${
+                    overdueTasks > 0 ? "text-red-700" : "text-pine"
+                  }`}
+                >
+                  {faNum(overdueTasks)}
+                </p>
+                <p className="mt-1 text-[0.75rem] text-slate">مشاهده‌ی فعالیت‌ها ←</p>
+              </div>
+            </a>
           </div>
 
           {/* تفکیک کانال */}

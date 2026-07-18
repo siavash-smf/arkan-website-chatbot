@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { isAuthed } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import AdminShell from "@/components/admin/AdminShell";
 import LeadsManager, { type Lead } from "@/components/admin/LeadsManager";
 
 export const metadata: Metadata = { title: "لیدها", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
+// اکشن «امتیازدهی با AI» از همین صفحه صدا زده می‌شود؛ reasoning مدل زمان می‌برد.
+export const maxDuration = 60;
 
 export default async function LeadsPage() {
-  if (!isAuthed()) redirect("/admin/login");
+  const session = getSession();
+  if (!session) redirect("/admin/login");
 
   const supabase = getSupabaseAdmin();
   let leads: Lead[] = [];
@@ -26,7 +29,7 @@ export default async function LeadsPage() {
   }
 
   return (
-    <AdminShell active="leads">
+    <AdminShell active="leads" role={session.role}>
       <LeadsManager leads={leads} error={error} />
     </AdminShell>
   );

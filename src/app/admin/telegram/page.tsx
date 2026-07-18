@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { isAuthed } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import AdminShell from "@/components/admin/AdminShell";
 import TelegramSettings from "@/components/admin/TelegramSettings";
@@ -9,7 +9,8 @@ export const metadata: Metadata = { title: "تلگرام", robots: { index: fals
 export const dynamic = "force-dynamic";
 
 export default async function TelegramPage() {
-  if (!isAuthed()) redirect("/admin/login");
+  const session = getSession();
+  if (!session) redirect("/admin/login");
   const supabase = getSupabaseAdmin();
   let userCount = 0;
   if (supabase) {
@@ -20,7 +21,7 @@ export default async function TelegramPage() {
     userCount = count ?? 0;
   }
   return (
-    <AdminShell active="telegram">
+    <AdminShell active="telegram" role={session.role}>
       <TelegramSettings userCount={userCount} />
     </AdminShell>
   );
