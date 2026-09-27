@@ -102,6 +102,8 @@ CRM کامل بر پایه‌ی جریان کلاسیک **Lead → Convert → C
 - **معاملات** — برد **کانبان** با درگ‌انددراپ بومی (بدون کتابخانه)، مراحل config-driven از جدول `pipeline_stages`، مبلغ به تومان، برد/باخت خودکار + ✨ **پیشنهاد اقدام بعدی AI**
 - **فعالیت‌ها** — تماس/جلسه/یادداشت/وظیفه با سررسید و هایلایت «معوق»
 - **گزارش‌ها** — قیف تبدیل، ارزش پایپ‌لاین به تفکیک مرحله، منابع لید، درآمد ماهانه (تقویم فارسی)
+- **پروپوزال‌ها** — پیشنهاد همکاری از ۵ قالب خدمات آرکان (دستی یا از روی مخاطب)، پیش‌نمایش زنده‌ی A4، **دانلود PDF**، ارسال با ایمیل (PDF پیوست)، انتخاب بسته و تأیید/درخواست تغییر کلاینت در `/proposal/[token]`، **تبدیل به قرارداد**
+- **قراردادها** — قرارداد ۱۳ ماده‌ای آرکان (پیش‌پر از پروپوزال)، پیش‌نمایش A4 و PDF، **ارسال با ایمیل**، تأیید آنلاین کلاینت با نام/زمان/IP و ایمیل خودکار نسخه‌ی تأییدشده. PDF در مرورگر ساخته می‌شود (jsPDF + html2canvas-pro). جزئیات در README ریپوی [arkan-crm](https://github.com/siavash-smf/arkan-crm)
 - **کاربران و لاگ** — احراز هویت چندکاربره (ایمیل + رمز scrypt، بدون کتابخانه‌ی اضافه) با نقش‌های `owner/admin/editor/operator/viewer` (بیننده فقط‌خواندنی) + **audit log** همه‌ی عملیات
 
 **راه‌اندازی چندکاربره:** تا وقتی کاربری نساخته‌اید، ورود با همان `ADMIN_PASSWORD` قدیمی کار می‌کند؛ از صفحه‌ی ورود «ایجاد اولین حساب مالک» را بزنید (رمز فعلی = کد راه‌اندازی). پس از آن ورود فقط با ایمیل و رمز است.
@@ -125,6 +127,8 @@ ADMIN_PASSWORD= / ADMIN_SESSION_SECRET=                  # ورود پنل
 OPENROUTER_API_KEY=                                      # تولید پاسخ
 COHERE_API_KEY= (+ EMBEDDING_PROVIDER/MODEL)             # embedding
 TELEGRAM_BOT_TOKEN= / TELEGRAM_WEBHOOK_SECRET=           # کانال تلگرام
+RESEND_API_KEY= / RESEND_FROM=                           # ایمیل کمپین، پروپوزال و قرارداد (دامنه‌ی تأییدشده در Resend)
+CRM_NOTIFY_EMAIL=                                        # (اختیاری) اعلان پاسخ کلاینت و نسخه‌ی تأییدشده
 ```
 
 ### پایگاه داده (در SQL Editor سوپابیس اجرا کنید — به همین ترتیب)
@@ -135,6 +139,7 @@ TELEGRAM_BOT_TOKEN= / TELEGRAM_WEBHOOK_SECRET=           # کانال تلگرا
 5. [`supabase/contracts-schema.sql`](supabase/contracts-schema.sql) — قراردادها + توکن عمومی
 6. [`supabase/campaigns-schema.sql`](supabase/campaigns-schema.sql) — کمپین‌های ایمیلی
 7. [`supabase/chatbot-upgrade.sql`](supabase/chatbot-upgrade.sql) — قابلیت‌های عملیاتی: `chat_settings`، `unanswered_questions`، `rate_limits` + تابع `bump_rate_limit`، ستون‌های تحویل به انسان، سؤال‌های پیشنهادی، و اصلاح `max_tokens` به ۲۰۰۰
+8. [`supabase/proposals-schema.sql`](supabase/proposals-schema.sql) — پروپوزال‌ها و گفت‌وگوی کلاینت + ستون‌های تازه‌ی قرارداد (اسکیمای `arkan`، با `grant` صریح برای `service_role`)
 
 > ⚠️ **اسکیما:** در استقرار فعلی، جدول‌ها در اسکیمای `arkan` هستند نه `public` (دیتابیس با پروژه‌های دیگر مشترک است و کلاینت با `db: { schema: "arkan" }` ساخته می‌شود — `src/lib/supabase.ts`). فقط `chatbot-upgrade.sql` با همین اسکیما نوشته شده؛ فایل‌های قدیمی‌تر `public.` دارند و اگر روی همین دیتابیس اجرایشان می‌کنید باید اول جایگزین کنید. کوئری‌زدن روی `public.conversations` خطای «relation does not exist» می‌دهد.
 

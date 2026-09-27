@@ -22,6 +22,7 @@ const GROUPS = [
       { key: "companies", label: "شرکت‌ها", href: "/admin/crm/companies" },
       { key: "deals", label: "معاملات", href: "/admin/crm/deals" },
       { key: "activities", label: "فعالیت‌ها", href: "/admin/crm/activities" },
+      { key: "proposals", label: "پروپوزال‌ها", href: "/admin/crm/proposals" },
       { key: "contracts", label: "قراردادها", href: "/admin/crm/contracts" },
       { key: "campaigns", label: "کمپین‌ها", href: "/admin/crm/campaigns" },
       { key: "reports", label: "گزارش‌ها", href: "/admin/crm/reports" },

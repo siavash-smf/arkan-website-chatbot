@@ -131,6 +131,10 @@ export type Contract = {
   viewed_at: string | null;
   accepted_at: string | null;
   accepted_by_name: string | null;
+  /** ستون‌های proposals-schema.sql — روی دیتابیسی که آن را اجرا نکرده undefined هستند */
+  accepted_ip?: string | null;
+  accepted_copy_sent_at?: string | null;
+  proposal_id?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

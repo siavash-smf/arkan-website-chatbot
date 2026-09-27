@@ -15,6 +15,8 @@ import {
   suggestBlogContent,
 } from "@/lib/crm/ai";
 import { buildDefaultContract } from "@/lib/crm/contract-template";
+import { nextDocNumber, siteOrigin } from "@/lib/crm/doc-utils";
+import { contractEmail, sendEmail } from "@/lib/crm/email";
 import { buildSegment, SEGMENTS } from "@/lib/crm/segments";
 import { listPublishedPosts } from "@/lib/blog";
 
@@ -601,7 +603,7 @@ export async function createContract(
   const supabase = getSupabaseAdmin();
   if (!supabase) return NO_DB;
 
-  const [{ data: contact }, { data: deal }, { count }] = await Promise.all([
+  const [{ data: contact }, { data: deal }] = await Promise.all([
     supabase
       .from("contacts")
       .select("id, full_name, company_id, lead_id, company:companies(name)")
@@ -610,13 +612,11 @@ export async function createContract(
     parsed.data.deal_id
       ? supabase.from("deals").select("id, title, amount_toman").eq("id", parsed.data.deal_id).maybeSingle()
       : Promise.resolve({ data: null }),
-    supabase.from("contracts").select("id", { count: "exact", head: true }),
   ]);
   if (!contact) return { ok: false, error: "مخاطب پیدا نشد." };
 
   // شماره‌ی قرارداد: AR-<سال شمسی>-<شماره ترتیبی>
-  const faYear = new Intl.DateTimeFormat("fa-IR-u-nu-latn", { year: "numeric" }).format(new Date());
-  const contractNo = `AR-${faYear}-${String((count ?? 0) + 1).padStart(3, "0")}`;
+  const contractNo = await nextDocNumber(supabase, "contracts", "contract_no", "AR");
 
   let challenge: string | null = null;
   if (contact.lead_id) {
@@ -728,6 +728,68 @@ export async function markContractSent(id: string): Promise<ActionResult> {
   if (error) return { ok: false, error: error.message };
 
   await logAudit(g.session, "contract_send", id);
+  revalidatePath("/admin/crm/contracts");
+  revalidatePath(`/admin/crm/contracts/${id}`);
+  return { ok: true };
+}
+
+/**
+ * ارسال قرارداد با ایمیل: PDF (که در مرورگر از همان پیش‌نمایش ساخته شده) پیوست می‌شود
+ * و لینک اختصاصی تأیید آنلاین در متن ایمیل می‌آید. پیش‌نویس ← «ارسال‌شده».
+ */
+export async function sendContractEmail(
+  id: string,
+  pdfBase64: string,
+  note: string
+): Promise<ActionResult> {
+  const g = guard();
+  if ("fail" in g) return g.fail;
+  if (!pdfBase64 || pdfBase64.length > 4_200_000) {
+    return { ok: false, error: "فایل PDF نامعتبر یا بیش از حد بزرگ است." };
+  }
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return NO_DB;
+
+  const { data: contract } = await supabase
+    .from("contracts")
+    .select("id, contract_no, title, status, amount_toman, duration_label, share_token, contact:contacts(full_name, email)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!contract) return { ok: false, error: "قرارداد پیدا نشد." };
+  if (contract.status === "accepted" || contract.status === "canceled") {
+    return { ok: false, error: "قرارداد تأییدشده یا لغوشده دوباره ارسال نمی‌شود." };
+  }
+  const contact = contract.contact as unknown as { full_name: string; email: string | null } | null;
+  if (!contact?.email) {
+    return { ok: false, error: "مخاطب این قرارداد ایمیل ندارد؛ اول ایمیل را در پرونده‌ی مخاطب ثبت کنید." };
+  }
+
+  const mail = contractEmail({
+    contractNo: contract.contract_no,
+    title: contract.title,
+    clientName: contact.full_name,
+    amountToman: contract.amount_toman,
+    durationLabel: contract.duration_label,
+    viewUrl: `${siteOrigin()}/contract/${contract.share_token}`,
+    note: note.trim() || null,
+  });
+  const sent = await sendEmail({
+    to: contact.email,
+    subject: mail.subject,
+    html: mail.html,
+    replyTo: process.env.CRM_NOTIFY_EMAIL || null,
+    attachments: [{ filename: `${contract.contract_no}.pdf`, content: pdfBase64 }],
+  });
+  if (!sent.ok) return { ok: false, error: sent.error };
+
+  if (contract.status === "draft") {
+    await supabase
+      .from("contracts")
+      .update({ status: "sent", sent_at: new Date().toISOString() })
+      .eq("id", id);
+  }
+
+  await logAudit(g.session, "contract_send", id, { to: contact.email, via: "email" });
   revalidatePath("/admin/crm/contracts");
   revalidatePath(`/admin/crm/contracts/${id}`);
   return { ok: true };
