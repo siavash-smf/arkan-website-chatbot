@@ -162,9 +162,14 @@ export async function createFirstOwner(
   redirect("/admin");
 }
 
-/** خروج مدیر. */
+/**
+ * خروج مدیر.
+ * کوکی با path=/admin ساخته شده؛ cookies().delete(name) آن را با path پیش‌فرض «/» پاک می‌کند
+ * که از نظر مرورگر کوکی دیگری است و کوکی اصلی می‌ماند (خروج کار نمی‌کرد).
+ * پس با همان تنظیمات و maxAge صفر بازنویسی‌اش می‌کنیم.
+ */
 export async function logout(): Promise<void> {
-  cookies().delete(ADMIN_COOKIE);
+  cookies().set(ADMIN_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });
   redirect("/admin/login");
 }
 
