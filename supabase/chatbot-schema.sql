@@ -9,7 +9,7 @@
 create extension if not exists vector;
 
 -- ── پایگاه دانش ──────────────────────────────────────────────────
-create table if not exists public.documents (
+create table if not exists arkan.documents (
   id          uuid primary key default gen_random_uuid(),
   title       text not null,
   source_type text not null default 'text',     -- text | url | pdf
@@ -21,9 +21,9 @@ create table if not exists public.documents (
   created_at  timestamptz not null default now()
 );
 
-create table if not exists public.chunks (
+create table if not exists arkan.chunks (
   id          uuid primary key default gen_random_uuid(),
-  document_id uuid not null references public.documents(id) on delete cascade,
+  document_id uuid not null references arkan.documents(id) on delete cascade,
   content     text not null,
   embedding   vector(1024),                       -- Cohere embed-multilingual-v3.0
   token_count int,
@@ -31,13 +31,13 @@ create table if not exists public.chunks (
   metadata    jsonb,
   created_at  timestamptz not null default now()
 );
-create index if not exists chunks_document_id_idx on public.chunks (document_id);
+create index if not exists chunks_document_id_idx on arkan.chunks (document_id);
 -- ایندکس برداری HNSW با فاصله‌ی کسینوسی
 create index if not exists chunks_embedding_idx
-  on public.chunks using hnsw (embedding vector_cosine_ops);
+  on arkan.chunks using hnsw (embedding vector_cosine_ops);
 
 -- ── گفتگو و پیام ────────────────────────────────────────────────
-create table if not exists public.conversations (
+create table if not exists arkan.conversations (
   id               uuid primary key default gen_random_uuid(),
   channel          text not null default 'web',   -- web | widget | telegram
   external_user_id text,
@@ -47,9 +47,9 @@ create table if not exists public.conversations (
   last_at          timestamptz not null default now()
 );
 
-create table if not exists public.messages (
+create table if not exists arkan.messages (
   id                  uuid primary key default gen_random_uuid(),
-  conversation_id     uuid not null references public.conversations(id) on delete cascade,
+  conversation_id     uuid not null references arkan.conversations(id) on delete cascade,
   role                text not null,              -- user | assistant | system | tool
   content             text not null,
   model_used          text,
@@ -59,10 +59,10 @@ create table if not exists public.messages (
   created_at          timestamptz not null default now()
 );
 create index if not exists messages_conversation_idx
-  on public.messages (conversation_id, created_at);
+  on arkan.messages (conversation_id, created_at);
 
 -- ── پرسونا / System Prompt (نسخه‌بندی) ──────────────────────────
-create table if not exists public.prompt_versions (
+create table if not exists arkan.prompt_versions (
   id         uuid primary key default gen_random_uuid(),
   content    text not null,                       -- متن system prompt
   persona    text,                                -- برچسب/یادداشت پرسونا
@@ -72,7 +72,7 @@ create table if not exists public.prompt_versions (
 );
 
 -- ── پیکربندی مدل تولید پاسخ ─────────────────────────────────────
-create table if not exists public.model_config (
+create table if not exists arkan.model_config (
   id                uuid primary key default gen_random_uuid(),
   channel           text not null default 'web',
   provider          text not null default 'openrouter',
@@ -87,7 +87,7 @@ create table if not exists public.model_config (
 );
 
 -- ── پیکربندی Embedding و retrieval ──────────────────────────────
-create table if not exists public.embedding_config (
+create table if not exists arkan.embedding_config (
   id                   uuid primary key default gen_random_uuid(),
   provider             text not null default 'cohere',
   model                text not null default 'embed-multilingual-v3.0',
@@ -102,27 +102,27 @@ create table if not exists public.embedding_config (
 );
 
 -- ── جداول forward-compat (خالی در Milestone 1) ──────────────────
-create table if not exists public.unified_users (
+create table if not exists arkan.unified_users (
   id          uuid primary key default gen_random_uuid(),
   channel     text not null,
   external_id text not null,
   name        text,
   first_seen  timestamptz not null default now()
 );
-create table if not exists public.feedback (
+create table if not exists arkan.feedback (
   id         uuid primary key default gen_random_uuid(),
-  message_id uuid references public.messages(id) on delete cascade,
+  message_id uuid references arkan.messages(id) on delete cascade,
   rating     text,                                -- up | down
   comment    text,
   created_at timestamptz not null default now()
 );
-create table if not exists public.admin_users (
+create table if not exists arkan.admin_users (
   id         uuid primary key default gen_random_uuid(),
   email      text unique not null,
   role       text not null default 'admin',       -- owner | admin | editor | operator | viewer
   created_at timestamptz not null default now()
 );
-create table if not exists public.audit_log (
+create table if not exists arkan.audit_log (
   id            uuid primary key default gen_random_uuid(),
   admin_user_id uuid,
   action        text not null,
@@ -131,24 +131,24 @@ create table if not exists public.audit_log (
 );
 
 -- ── گسترش جدول leads برای یکپارچگی با چت‌بات ─────────────────────
-alter table public.leads add column if not exists source text default 'website';
-alter table public.leads add column if not exists conversation_id uuid;
+alter table arkan.leads add column if not exists source text default 'website';
+alter table arkan.leads add column if not exists conversation_id uuid;
 
 -- ── فعال‌سازی RLS روی جداول جدید (بدون policy ⇒ فقط service-role) ─
-alter table public.documents        enable row level security;
-alter table public.chunks           enable row level security;
-alter table public.conversations    enable row level security;
-alter table public.messages         enable row level security;
-alter table public.prompt_versions  enable row level security;
-alter table public.model_config     enable row level security;
-alter table public.embedding_config enable row level security;
-alter table public.unified_users    enable row level security;
-alter table public.feedback         enable row level security;
-alter table public.admin_users      enable row level security;
-alter table public.audit_log        enable row level security;
+alter table arkan.documents        enable row level security;
+alter table arkan.chunks           enable row level security;
+alter table arkan.conversations    enable row level security;
+alter table arkan.messages         enable row level security;
+alter table arkan.prompt_versions  enable row level security;
+alter table arkan.model_config     enable row level security;
+alter table arkan.embedding_config enable row level security;
+alter table arkan.unified_users    enable row level security;
+alter table arkan.feedback         enable row level security;
+alter table arkan.admin_users      enable row level security;
+alter table arkan.audit_log        enable row level security;
 
 -- ── تابع جست‌وجوی شباهت برداری ──────────────────────────────────
-create or replace function public.match_chunks(
+create or replace function arkan.match_chunks(
   query_embedding vector(1024),
   match_count int default 5,
   similarity_threshold float default 0.3
@@ -168,7 +168,7 @@ as $$
     c.content,
     c.chunk_index,
     1 - (c.embedding <=> query_embedding) as similarity
-  from public.chunks c
+  from arkan.chunks c
   where c.embedding is not null
     and 1 - (c.embedding <=> query_embedding) >= similarity_threshold
   order by c.embedding <=> query_embedding
@@ -176,15 +176,15 @@ as $$
 $$;
 
 -- ── ردیف‌های پیش‌فرض (Seed) — فقط اگر خالی باشند ────────────────
-insert into public.embedding_config (provider, model, dimensions)
+insert into arkan.embedding_config (provider, model, dimensions)
 select 'cohere', 'embed-multilingual-v3.0', 1024
-where not exists (select 1 from public.embedding_config);
+where not exists (select 1 from arkan.embedding_config);
 
-insert into public.model_config (channel, active_model, fallback_model)
+insert into arkan.model_config (channel, active_model, fallback_model)
 select 'web', 'google/gemini-3.5-flash', 'google/gemini-2.5-flash'
-where not exists (select 1 from public.model_config where channel = 'web');
+where not exists (select 1 from arkan.model_config where channel = 'web');
 
-insert into public.prompt_versions (content, persona, is_active, created_by)
+insert into arkan.prompt_versions (content, persona, is_active, created_by)
 select
 $persona$تو دستیار هوشمند «آرکان» هستی؛ آرکان یک شرکت مشاور استراتژی و رشد کسب‌وکار در تهران است.
 
@@ -205,4 +205,4 @@ $persona$تو دستیار هوشمند «آرکان» هستی؛ آرکان ی�
   'حکیمِ آرام آرکان',
   true,
   'system'
-where not exists (select 1 from public.prompt_versions where is_active = true);
+where not exists (select 1 from arkan.prompt_versions where is_active = true);

@@ -3,7 +3,7 @@
 -- در SQL Editor همان پروژه‌ی Supabase اجرا کنید.
 -- ───────────────────────────────────────────────────────────────
 
-create table if not exists public.widget_config (
+create table if not exists arkan.widget_config (
   id              uuid primary key default gen_random_uuid(),
   enabled         boolean not null default true,
   primary_color   text not null default '#143A32',
@@ -14,9 +14,9 @@ create table if not exists public.widget_config (
   updated_at      timestamptz not null default now()
 );
 
-alter table public.widget_config enable row level security;
+alter table arkan.widget_config enable row level security;
 
 -- یک ردیف پیش‌فرض (فقط اگر خالی باشد)
-insert into public.widget_config (enabled)
+insert into arkan.widget_config (enabled)
 select true
-where not exists (select 1 from public.widget_config);
+where not exists (select 1 from arkan.widget_config);

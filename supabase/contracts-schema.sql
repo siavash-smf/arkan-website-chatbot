@@ -7,13 +7,13 @@
 -- (صفحه‌ی عمومی قرارداد هم سمت سرور با توکن غیرقابل‌حدس رندر می‌شود).
 -- ───────────────────────────────────────────────────────────────
 
-create table if not exists public.contracts (
+create table if not exists arkan.contracts (
   id               uuid primary key default gen_random_uuid(),
   contract_no      text not null,                  -- مثل AR-1404-007
   title            text not null,
-  deal_id          uuid references public.deals(id) on delete set null,
-  contact_id       uuid not null references public.contacts(id) on delete cascade,
-  company_id       uuid references public.companies(id) on delete set null,
+  deal_id          uuid references arkan.deals(id) on delete set null,
+  contact_id       uuid not null references arkan.contacts(id) on delete cascade,
+  company_id       uuid references arkan.companies(id) on delete set null,
   body_md          text not null,                  -- متن قرارداد (Markdown)
   amount_toman     bigint not null default 0,
   start_date       date,
@@ -28,7 +28,7 @@ create table if not exists public.contracts (
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
-create index if not exists contracts_contact_idx on public.contracts (contact_id, created_at desc);
-create index if not exists contracts_token_idx   on public.contracts (share_token);
+create index if not exists contracts_contact_idx on arkan.contracts (contact_id, created_at desc);
+create index if not exists contracts_token_idx   on arkan.contracts (share_token);
 
-alter table public.contracts enable row level security;
+alter table arkan.contracts enable row level security;

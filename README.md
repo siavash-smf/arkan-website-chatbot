@@ -18,6 +18,12 @@
 
 این **همان پرامپتی** است که برای ساخت کل چت‌بات (مغز RAG، سه کانال، پنل مدیریت) به Claude Code داده شد. کافی است آن را همراه اسناد مرجع به دستیار بدهید تا پروژه‌ی مشابه را بسازد.
 
+### ۱ب) پرامپت‌های فاز ۱ و ۴ (وب‌سایت و CRM)
+> 📄 **[arkan-website-claude-code-prompt.md](پرامپت%20استفاده%20شده/arkan-website-claude-code-prompt.md)** — ساخت وب‌سایت شرکتی (فاز ۱)
+> 📄 **[arkan-crm-claude-code-prompt.md](پرامپت%20استفاده%20شده/arkan-crm-claude-code-prompt.md)** — ساخت CRM کامل با پروپوزال و قرارداد (فاز ۴)
+
+کل این اپ با این سه پرامپت ساخته شده؛ به ترتیب بدهید: وب‌سایت ← چت‌بات ← CRM. راهنمای کامل راه‌اندازی از صفر در README ریپوی [arkan-crm](https://github.com/siavash-smf/arkan-crm) است.
+
 ### ۲) فایل System Prompt چت‌بات
 > 📄 **[arkan-chatbot-system-prompt.md](arkan-chatbot-system-prompt.md)**
 
@@ -132,6 +138,7 @@ CRM_NOTIFY_EMAIL=                                        # (اختیاری) اع
 ```
 
 ### پایگاه داده (در SQL Editor سوپابیس اجرا کنید — به همین ترتیب)
+0. [`supabase/00-arkan-schema.sql`](supabase/00-arkan-schema.sql) — ساخت اسکیمای `arkan` و دسترسی `service_role` (بعدش در Project Settings → Data API → Exposed schemas، `arkan` را اضافه کنید)
 1. [`supabase/schema.sql`](supabase/schema.sql) — جدول `leads`
 2. [`supabase/chatbot-schema.sql`](supabase/chatbot-schema.sql) — pgvector + جداول چت‌بات + `match_chunks`
 3. [`supabase/widget-schema.sql`](supabase/widget-schema.sql) — پیکربندی ویجت
@@ -141,7 +148,7 @@ CRM_NOTIFY_EMAIL=                                        # (اختیاری) اع
 7. [`supabase/chatbot-upgrade.sql`](supabase/chatbot-upgrade.sql) — قابلیت‌های عملیاتی: `chat_settings`، `unanswered_questions`، `rate_limits` + تابع `bump_rate_limit`، ستون‌های تحویل به انسان، سؤال‌های پیشنهادی، و اصلاح `max_tokens` به ۲۰۰۰
 8. [`supabase/proposals-schema.sql`](supabase/proposals-schema.sql) — پروپوزال‌ها و گفت‌وگوی کلاینت + ستون‌های تازه‌ی قرارداد (اسکیمای `arkan`، با `grant` صریح برای `service_role`)
 
-> ⚠️ **اسکیما:** در استقرار فعلی، جدول‌ها در اسکیمای `arkan` هستند نه `public` (دیتابیس با پروژه‌های دیگر مشترک است و کلاینت با `db: { schema: "arkan" }` ساخته می‌شود — `src/lib/supabase.ts`). فقط `chatbot-upgrade.sql` با همین اسکیما نوشته شده؛ فایل‌های قدیمی‌تر `public.` دارند و اگر روی همین دیتابیس اجرایشان می‌کنید باید اول جایگزین کنید. کوئری‌زدن روی `public.conversations` خطای «relation does not exist» می‌دهد.
+> ⚠️ **اسکیما:** همه‌ی جدول‌ها در اسکیمای `arkan` هستند نه `public` (دیتابیس می‌تواند با پروژه‌های دیگر مشترک باشد). کلاینت اپ و اسکریپت‌ها با `db: { schema: "arkan" }` ساخته می‌شوند و همه‌ی فایل‌های SQL هم با همین اسکیما نوشته شده‌اند. در SQL Editor جلوی نام جدول‌ها `arkan.` بگذارید؛ کوئری روی `public.conversations` خطای «relation does not exist» می‌دهد.
 
 ### بارگذاری پایگاه دانش
 ```bash

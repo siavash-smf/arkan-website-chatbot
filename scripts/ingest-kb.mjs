@@ -43,6 +43,7 @@ if (!SUPABASE_URL || !SERVICE_KEY) throw new Error("متغیرهای Supabase د
 if (!COHERE_API_KEY) throw new Error("COHERE_API_KEY در .env.local نیست.");
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
+  db: { schema: "arkan" }, // جدول‌های آرکان در اسکیمای arkan هستند، نه public
   auth: { persistSession: false, autoRefreshToken: false },
 });
 

@@ -6,7 +6,7 @@
 -- ارسال با Resend (اختیاری — بدون کلید، پیش‌نویس‌ها قابل کپی هستند).
 -- ───────────────────────────────────────────────────────────────
 
-create table if not exists public.campaigns (
+create table if not exists arkan.campaigns (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   segment_key text not null,                    -- کلید سگمنت تعریف‌شده در کد
@@ -17,11 +17,11 @@ create table if not exists public.campaigns (
   created_at  timestamptz not null default now()
 );
 
-create table if not exists public.campaign_emails (
+create table if not exists arkan.campaign_emails (
   id          uuid primary key default gen_random_uuid(),
-  campaign_id uuid not null references public.campaigns(id) on delete cascade,
-  contact_id  uuid references public.contacts(id) on delete set null,
-  lead_id     uuid references public.leads(id) on delete set null,
+  campaign_id uuid not null references arkan.campaigns(id) on delete cascade,
+  contact_id  uuid references arkan.contacts(id) on delete set null,
+  lead_id     uuid references arkan.leads(id) on delete set null,
   to_name     text not null,
   to_email    text not null,
   context     jsonb,                            -- زمینه‌ی شخصی‌سازی (چالش، وضعیت، …)
@@ -32,7 +32,7 @@ create table if not exists public.campaign_emails (
   sent_at     timestamptz,
   created_at  timestamptz not null default now()
 );
-create index if not exists campaign_emails_campaign_idx on public.campaign_emails (campaign_id);
+create index if not exists campaign_emails_campaign_idx on arkan.campaign_emails (campaign_id);
 
-alter table public.campaigns       enable row level security;
-alter table public.campaign_emails enable row level security;
+alter table arkan.campaigns       enable row level security;
+alter table arkan.campaign_emails enable row level security;

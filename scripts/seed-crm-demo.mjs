@@ -36,6 +36,7 @@ function loadEnv() {
 }
 const env = loadEnv();
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  db: { schema: "arkan" }, // جدول‌های آرکان در اسکیمای arkan هستند، نه public
   auth: { persistSession: false },
 });
 
